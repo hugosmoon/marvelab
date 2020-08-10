@@ -3,9 +3,14 @@ from django.conf.urls import url
 
 
 from . import views
+from . import views_view
+from .views_model import views_model
+from .views_user import views_user
 
 urlpatterns = [
     path('index/', views.home,name='home'),
+    path('model_manage/',views.model_manage,name='model_manage'),
+    url('view_design/',views.view_design,name='view_design'),
     # path('tool_display/', views.tool_display,name='tool_display'),
     # path('qxyl/', views.qxyl,name='qxyl'),
     # path('jgzl/', views.jgzl,name='jgzl'),
@@ -19,28 +24,24 @@ urlpatterns = [
     # path('delete_model/',views.delete_model,name='delete_model'),
     # path('get_views/',views.get_views,name='get_views'),
     # path('add_view/',views.add_view,name='add_view'),
-    # path('model_manage/',views.model_manage,name='model_manage'),
-    # path('create_folder/',views.create_folder,name='create_folder'),
-    # path('get_folders/',views.get_folders,name='get_folders'),
-    # path('upload_model/',views.upload_model,name='upload_model'),
-    # path('get_model_by_folderid/',views.get_model_by_folderid,name='get_model_by_folderid'),
+    
+    
     # path('get_model_info_by_id/',views.get_model_info_by_id,name='get_model_info_by_id'),
-    # path('is_view_exist/',views.is_view_exist,name='is_view_exist'),
+    
     # re_path('^view_display/(?P<view_id>[0-9]+)/',views.view_display,name='view_display'),
     # path('create_display_view/',views.create_display_view,name='create_display_view'),
     # path('get_display_view/',views.get_display_view,name='get_display_view'),
     # path('test/',views.test,name='test'),
-    # path('login/',views.login_page,name='login_page'),
-    # path('login_verification/',views.login_verification,name='login_verification'),
-    # path('do_login/',views.do_login,name='do_login'),
-    # path('adduser/',views.adduser,name='adduser'),
-    # path('createuser/',views.createuser,name='createuser'),
+    
+    
+    
+    
     # path('admin_verification/',views.admin_verification,name='admin_verification'),
 
     # # 异常处理
     # path('view_exception/',views.view_exception,name='view_exception'),
     # # 创建访问日志
-    # path('create_visit_log/',views.create_visit_log,name='create_visit_log'),
+    
     # # 打开编程页面
     # path('view_program_page/',views.view_program_page,name='view_program_page'),
     # # 保存代码
@@ -52,6 +53,35 @@ urlpatterns = [
     # #ajax
     # #用七牛公有链接获取私有链接
     # # path('get_private_model/', views.get_private_model,name='get_private_model'),
+
+    # 用户
+    path('createuser/',views_user.createuser,name='createuser'),
+    path('login/',views_user.login_page,name='login_page'),
+    path('login_verification/',views_user.login_verification,name='login_verification'),
+    path('do_login/',views_user.do_login,name='do_login'),
+    path('adduser/',views_user.adduser,name='adduser'),
+    path('create_visit_log/',views_user.create_visit_log,name='create_visit_log'),
+
+    # 模型
+    path('create_model_base/',views_model.create_model_base,name='create_model_base'),
+    path('get_model_base/',views_model.get_model_base,name='get_model_base'),
+    path('get_model_info_by_id/',views_model.get_model_info_by_id,name='get_model_info_by_id'),
+
+    path('upload_model/',views_model.upload_model,name='upload_model'),
+    path('get_model_by_base_id/',views_model.get_model_by_base_id,name='get_model_by_base_id'),
+
+    # 场景
+    path('get_parent_views/',views_view.get_parent_views,name='get_parent_views'),
+    path('get_child_views/',views_view.get_child_views,name='get_child_views'),
+    path('is_view_exist/',views_view.is_view_exist,name='is_view_exist'),
+    path('add_parent_view/',views_view.add_parent_view,name='add_parent_view'),
+    path('add_child_view/',views_view.add_child_view,name='add_child_view'),
+   
+    
+    
+
+    
+
 
     
 ]

@@ -111,7 +111,7 @@
         </div>
     </div>
     <script>
-        let owner_id=$.cookie("userid");
+        let owner_id=$.cookie("user_id");
         let view_id={{view_id}};
         let Main = {
             data() {
@@ -136,7 +136,7 @@
             methods: {
                 get_models:function(){
                     this.$http.post(
-                        '/vmm/get_models_by_view/',
+                        '/vmaker/get_models_by_view/',
                         {
                             view_id:this.view_id
                         },
@@ -156,7 +156,7 @@
                 save_code:function(){
 
                     this.$http.post(
-                        '/vmm/save_code/',
+                        '/vmaker/save_code/',
                         {
                             view_id:this.view_id,
                             code:this.code_serial+"**@**"+this.code
@@ -180,7 +180,7 @@
                 },
                 to_run_page:function(){
                     this.$http.post(
-                        '/vmm/save_code/',
+                        '/vmaker/save_code/',
                         {
                             view_id:this.view_id,
                             code:this.code_serial+"**@**"+this.code
@@ -189,7 +189,7 @@
                         ).then(function (res) {
                             // console.log(res)
                             if(res.body=="success"){
-                                window.open('/vmm/view_run/'+this.view_id+'/');
+                                window.open('/vmaker/view_run/'+this.view_id+'/');
                             }
                             else{
                                 this.$message({

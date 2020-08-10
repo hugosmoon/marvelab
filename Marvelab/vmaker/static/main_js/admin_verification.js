@@ -14,7 +14,7 @@ $.ajax({
 
     type: 'POST',
 
-    url: "/vmm/admin_verification/" ,
+    url: "/vmaker/admin_verification/" ,
 
     data: {
     'username':username    
@@ -23,7 +23,7 @@ $.ajax({
         // alert(data)
         if(data=="False"){
             alert("请用管理员账号登录")
-            document.write("<form action='/vmm/login/' method=post name=form1 style='display:none'>");  
+            document.write("<form action='/vmaker/login/' method=post name=form1 style='display:none'>");  
             document.write("<input type=hidden name='url' value='"+window.location.pathname+"'/>"); 
             document.write("</form>");  
             document.form1.submit();

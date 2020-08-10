@@ -13,7 +13,7 @@ $.ajax({
 
     type: 'POST',
 
-    url: "/vmm/login_verification/" ,
+    url: "/vmaker/login_verification/" ,
 
     data: {
     'username':username,
@@ -23,7 +23,7 @@ $.ajax({
     success: function(data){
         if(data=="False"){
             // alert("您还没有登录")
-            document.write("<form action='/vmm/login/' method=post name=form1 style='display:none'>");  
+            document.write("<form action='/vmaker/login/' method=post name=form1 style='display:none'>");  
             document.write("<input type=hidden name='url' value='"+window.location.pathname+"'/>"); 
             document.write("</form>");  
             document.form1.submit();

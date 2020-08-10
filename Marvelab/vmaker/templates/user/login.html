@@ -110,7 +110,7 @@
                 return {
                     username:"",
                     password:"",
-                    url:"/vmm/index/",
+                    url:"/vmaker/index/",
                 }
             },
             mounted:function(){
@@ -127,7 +127,7 @@
             methods: {
                 login:function(){
                     this.$http.post(
-                    '/vmm/login_verification/',
+                    '/vmaker/login_verification/',
                     {
                         username:this.username,
                         password:this.password
@@ -138,7 +138,7 @@
                             if(url!=""){
                                 this.url=url;
                             }
-                            document.write("<form action='/vmm/do_login/' method=post name=form1 style='display:none'>");  
+                            document.write("<form action='/vmaker/do_login/' method=post name=form1 style='display:none'>");  
                             document.write("<input type=hidden name='url' value='"+this.url+"'/>"); 
                             document.write("<input type=hidden name='username' value='"+this.username+"'/>"); 
                             document.write("<input type=hidden name='password' value='"+this.password+"'/>"); 

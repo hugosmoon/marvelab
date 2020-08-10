@@ -170,11 +170,12 @@
             methods: {
                 createuser:function(){
                     this.$http.post(
-                    '/vmm/createuser/',
+                    '/vmaker/createuser/',
                     {
                         usertype:this.usertype,
                         username:this.username,
-                        password:this.password
+                        password:this.password,
+                        verify_token:$.cookie('verify_token')
                     },
                     { emulateJSON: true }
                     ).then(function (res) {

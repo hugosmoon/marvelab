@@ -1,5 +1,5 @@
 // 用户的id
-let owner_id=$.cookie("userid")
+let owner_id=$.cookie("user_id")
 
 //模型的编号，自增
 let index=0;
@@ -71,11 +71,11 @@ let Main = {
             model_list: [],
             model_selected: '',
             model_to_add: '',
-            folder_list: [],
-            folder_selected: '',
-            model_in_folder_selected:'',
-            model_in_folder_list:[],
-            model_in_folder_material:0,
+            base_list: [],
+            model_base_selected: '',
+            model_in_model_base_selected:'',
+            model_in_base_list:[],
+            model_in_model_base_material:0,
             X_loc: 20,
             Y_loc: 0,
             Z_loc: 0,
@@ -129,8 +129,8 @@ let Main = {
         initThree(1);
         loadAutoScreen(camera, renderer);
         this.render();
-        this.get_views();
-        this.get_folders();
+        this.get_parent_views();
+        this.get_model_base();
         this.timer = setInterval(this.update_data, 500);
         this.listen_button();
         
@@ -194,97 +194,139 @@ let Main = {
                 this.child_view_models_DragControls();  
             }             
         },
-        get_views:function(){
+        get_parent_views:function(){
             this.$http.post(
-                '/vmm/get_views/',
+                '/vmaker/get_parent_views/',
                 {
-                    parent_id:0,
+                    // parent_id:0,
                     owner_id:owner_id
                 },
                 { emulateJSON: true }
                 ).then(function (res) {
                 this.views_list=[];
                 res.body.views.forEach(view => {
-                    this.views_list.push({value: view.id,label: view.view_name});
+                    this.views_list.push({value: view.id,label: view.parent_view_name});
                 })
 
             });
         },
         get_child_views:function(parent_view_id){
             this.$http.post(
-                '/vmm/get_views/',
+                '/vmaker/get_child_views/',
                 {
-                    parent_id:parent_view_id,
-                    owner_id:owner_id
+                    parent_view_id:parent_view_id,
                 },
                 { emulateJSON: true }
                 ).then(function (res) {
+                console.log(res)
                 this.child_view_list=[];
                 res.body.views.forEach(view => {
-                    this.child_view_list.push({value: view.id,label: view.view_name});
+                    this.child_view_list.push({value: view.id,label: view.child_view_name});
                 })
-
-
             });
         },
-        add_view:function(){
-            if(this.view_selected==''){
-                this.view_selected=0;
-            }
+        add_parent_view(){
             this.$prompt('输入场景名称（不能与现有场景名称重复，不要使用汉字）', '新建场景', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]/,
                 inputErrorMessage: '名称格式不正确'
             }).then(({ value }) => {
-                // this.views_list.forEach(view =>{
-                //     if(view.value==value){
-                //         this.$message({
-                //             type: 'error',
-                //             duration: 2000,
-                //             message: "与现有场景名重复"
-                //         });
-                //         success=false;
-                //     }
-                // });
                 this.$http.post(
-                    '/vmm/is_view_exist/',
+                    '/vmaker/add_parent_view/',
                     {
                         view_name:value,
                         owner_id:owner_id
                     },
                     { emulateJSON: true }
                     ).then(function (res) {
-                        if(res.body=='true'){
-                            this.$message({
-                                type: 'error',
-                                duration: 2000,
-                                message: "与现有场景名重复"
-                            });
-                            success=false;
-                        }                        
-                        else{
-                            this.$http.post(
-                                '/vmm/add_view/',
-                                {
-                                    view_name:value,
-                                    parent_id:this.view_selected,
-                                    owner_id:owner_id
-                                },
-                                { emulateJSON: true }
-                                ).then(function (res) {
-                                    this.$message({
-                                        type: 'success',
-                                        message: res.body
-                                    });
-                                    this.get_views();
-                                    if(this.view_selected!=0){
-                                        this.get_child_views(this.view_selected);
-                                    }
-                                });                   
-                        }
-                        
-                    });   
+                        this.$message({
+                            type: 'success',
+                            message: res.body
+                        });
+                        this.get_parent_views();
+                        // if(this.view_selected!=0){
+                        //     this.get_child_views(this.view_selected);
+                        // }
+                    });    
+
+            });
+        },
+        add_child_view(){
+            this.$prompt('输入场景名称（不能与现有场景名称重复，不要使用汉字）', '新建场景', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]/,
+                inputErrorMessage: '名称格式不正确'
+            }).then(({ value }) => {
+                this.$http.post(
+                    '/vmaker/add_child_view/',
+                    {
+                        view_name:value,
+                        parent_view_id:this.view_selected,
+                    },
+                    { emulateJSON: true }
+                    ).then(function (res) {
+                        this.$message({
+                            type: 'success',
+                            message: res.body
+                        });
+                        this.get_parent_views();
+                        // if(this.view_selected!=0){
+                        //     this.get_child_views(this.view_selected);
+                        // }
+                    });    
+
+            });
+        },
+        add_view:function(){
+            // if(this.view_selected==''){
+            //     this.view_selected=0;
+            // }
+            this.$prompt('输入场景名称（不能与现有场景名称重复，不要使用汉字）', '新建场景', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]/,
+                inputErrorMessage: '名称格式不正确'
+            }).then(({ value }) => {
+            this.$http.post(
+                '/vmaker/is_view_exist/',
+                {
+                    view_name:value,
+                    owner_id:owner_id
+                },
+                { emulateJSON: true }
+                ).then(function (res) {
+                    if(res.body=='true'){
+                        this.$message({
+                            type: 'error',
+                            duration: 2000,
+                            message: "与现有场景名重复"
+                        });
+                        success=false;
+                    }                        
+                    else{
+                        this.$http.post(
+                            '/vmaker/add_view/',
+                            {
+                                view_name:value,
+                                parent_id:this.view_selected,
+                                owner_id:owner_id
+                            },
+                            { emulateJSON: true }
+                            ).then(function (res) {
+                                this.$message({
+                                    type: 'success',
+                                    message: res.body
+                                });
+                                this.get_parent_views();
+                                if(this.view_selected!=0){
+                                    this.get_child_views(this.view_selected);
+                                }
+                            });                   
+                    }
+                    
+                });   
             });
         },
         select_view:function(){
@@ -339,7 +381,7 @@ let Main = {
         get_models:function(){
             let models_got_list=[];
             this.$http.post(
-                '/vmm/get_models_by_view/',
+                '/vmaker/get_models_by_view/',
                 {
                     view_id:current_view_id
                 },
@@ -407,7 +449,7 @@ let Main = {
             let view_position_z=0;
 
             this.$http.post(
-                '/vmm/get_models_by_view/',
+                '/vmaker/get_models_by_view/',
                 {
                     view_id:current_view_id
                 },
@@ -502,7 +544,7 @@ let Main = {
             let info=JSON.stringify(info_list);
             // console.log(info)
             this.$http.post(
-                '/vmm/save_models/',
+                '/vmaker/save_models/',
                 {
                     models:info
                 },
@@ -552,7 +594,7 @@ let Main = {
             });
             models_info[current_model_index]=null;
             this.$http.post(
-                '/vmm/delete_model/',
+                '/vmaker/delete_model/',
                 {
                     view_id:current_view_id,
                     model_index:current_model_index
@@ -745,19 +787,19 @@ let Main = {
                 alert("请载入场景")
                 return false;
             }
-            if(this.folder_selected==''){
+            if(this.model_base_selected==''){
                 alert("请选择文件夹")
                 return false;
             }
-            if(this.model_in_folder_selected==''){
+            if(this.model_in_model_base_selected==''){
                 alert("请选择模型")
                 return false;
             }
-            if(this.model_in_folder_selected!=''){
+            if(this.model_in_model_base_selected!=''){
                 this.$http.post(
-                    '/vmm/get_model_info_by_id/',
+                    '/vmaker/get_model_info_by_id/',
                     {
-                        model_id:this.model_in_folder_selected,
+                        model_id:this.model_in_model_base_selected,
                     },
                     { emulateJSON: true }
                 ).then(function (res){
@@ -767,7 +809,7 @@ let Main = {
                     let model_name=res.body.model[0].model_name;
                     let url=res.body.model[0].url
                     index+=1;
-                    models_info[index]=new Model(current_view_id,model_id,model_name,url,index,this.model_in_folder_material);
+                    models_info[index]=new Model(current_view_id,model_id,model_name,url,index,this.model_in_model_base_material);
                     this.model_list.push({value: index,label: index+"-"+model_name})
                     this.model_name='';
                     initObject(index); 
@@ -779,46 +821,42 @@ let Main = {
                 alert('模型名称不能为空')
             }
         },
-        select_model_in_folder:function(){
+        select_model_in_model_base:function(){
             this.add_model_status=false;
         },
-        get_folders:function(){
+        get_model_base:function(){
             this.$http.post(
-                '/vmm/get_folders/',
+                '/vmaker/get_model_base/',
                 {
                     owner_id:owner_id,
                 },
                 { emulateJSON: true }
                 ).then(function (res) {
-                ////console.log(res);
-                ////console.log(res.body);
-                res.body.folders.forEach(folder => {
-                    ////console.log(folder.folder_name);
-                    this.folder_list.push({value: folder.id,label: folder.folder_name});
+                res.body.model_base_own.forEach(base => {
+                    this.base_list.push({value: base.id,label: base.base_name});
                 })
             });
         },
-        get_models_by_folder:function(){
-            ////console.log(this.folder_selected);
+        get_model_by_model_base:function(){
             this.$http.post(
-                '/vmm/get_model_by_folderid/',
+                '/vmaker/get_model_by_base_id/',
                 {
-                    folder_id:this.folder_selected
+                    model_base_id:this.model_base_selected
                 },
                 { emulateJSON: true }
                 ).then(function (res) {
-                    this.model_in_folder_list=[];
+                    this.model_in_base_list=[];
                     res.body.models.forEach(model => {
-                        this.model_in_folder_list.push({value: model.id,label: model.model_name});
+                        this.model_in_base_list.push({value: model.id,label: model.model_name});
                 })
             });
         },
         //根据准备添加的模型的id获取模型的信息
         get_model_info_by_id:function(){
             this.$http.post(
-                '/vmm/get_model_info_by_id/',
+                '/vmaker/get_model_info_by_id/',
                 {
-                    model_id:this.model_in_folder_selected
+                    model_id:this.model_in_model_base_selected
                 },
                 { emulateJSON: true }
                 ).then(function (res) {
@@ -827,7 +865,7 @@ let Main = {
             });
         },
         to_manage_models:function(){
-            window.open('/vmm/model_manage/');
+            window.open('/vmaker/model_manage/');
         },
         // 加载遮罩
         openFullScreen:function() {
@@ -841,7 +879,7 @@ let Main = {
         view_display:function(){
             let inputValue='';
             this.$http.post(
-                '/vmm/get_display_view/',
+                '/vmaker/get_display_view/',
                 {
                     display_view_id:this.display_view_id
                 },
@@ -859,7 +897,7 @@ let Main = {
                         inputErrorMessage: '预览名称不能为空'
                         }).then(({ value }) => {
                         this.$http.post(
-                            '/vmm/create_display_view/',
+                            '/vmaker/create_display_view/',
                             {
                                 display_view_id:this.display_view_id,
                                 display_name:value
@@ -867,7 +905,7 @@ let Main = {
                             { emulateJSON: true }
                             ).then(function (res) {
                                 if(res.body=="success"){
-                                    window.open('/vmm/view_display/'+this.display_view_id);
+                                    window.open('/vmaker/view_display/'+this.display_view_id);
                                 }    
                         });                        
                       }).catch(() => {
@@ -948,7 +986,7 @@ let Main = {
         view_program:function() {
             //创建form表单
             var temp_form = document.createElement("form");
-            temp_form.action = '/vmm/view_program_page/';
+            temp_form.action = '/vmaker/view_program_page/';
             //如需打开新窗口，form的target属性要设置为'_blank'
             temp_form.target = "_blank";
             temp_form.method = "post";
@@ -1207,29 +1245,29 @@ function change_model(model_name,x,y,z,rx,ry,rz,scale_x,scale_y,scale_z,metalnes
     }; 
     let f1 = model_gui;
     f1.add({m:''},'m').name(controls.model_name);
-    // let f1_1 = f1.addFolder('位置设置');
+    // let f1_1 = f1.addmodel_base('位置设置');
     f1.add(controls, 'x', -5000, 5000).name('X轴移动').step(0.01).onChange(controls.move_x).onFinishChange(history_push);
     // f1.add(controls, 'mini_x', -30, 30).step(0.01).name('X轴移动微调').onChange(controls.move_x).onFinishChange(history_push);
     f1.add(controls, 'y', -5000, 5000).name('Y轴移动').step(0.01).onChange(controls.move_y).onFinishChange(history_push);
     // f1.add(controls, 'mini_y', -30, 30).step(0.01).name('Y轴移动微调').onChange(controls.move_y).onFinishChange(history_push);
     f1.add(controls, 'z', -5000, 5000).name('Z轴移动').step(0.01).onChange(controls.move_z).onFinishChange(history_push);
     // f1.add(controls, 'mini_z', -30, 30).step(0.01).name('Z轴移动微调').onChange(controls.move_z).onFinishChange(history_push);
-    let f1_2 = f1.addFolder('旋转设置');
+    let f1_2 = f1.addmodel_base('旋转设置');
     f1_2.add(controls, 'rx', -180, 180).name('X轴旋转度数').onChange(controls.rotate_x).onFinishChange(history_push);
     f1_2.add(controls, 'ry', -180, 180).name('Y轴旋转度数').onChange(controls.rotate_y).onFinishChange(history_push);
     f1_2.add(controls, 'rz', -180, 180).name('Z轴旋转度数').onChange(controls.rotate_z).onFinishChange(history_push);
-    let f1_3 = f1.addFolder('缩放设置');
+    let f1_3 = f1.addmodel_base('缩放设置');
     f1_3.add(controls, 'scale_x', 0, 10).name('X轴缩放比例').onChange(controls.change_scale_x).onFinishChange(history_push);
     f1_3.add(controls, 'scale_y', 0, 10).name('Y轴缩放比例').onChange(controls.change_scale_y).onFinishChange(history_push);
     f1_3.add(controls, 'scale_z', 0, 10).name('Z轴缩放比例').onChange(controls.change_scale_z).onFinishChange(history_push);
-    let f1_4 = f1.addFolder('材质设置');
+    let f1_4 = f1.addmodel_base('材质设置');
     f1_4.add(controls, 'metalness', 0, 1).name('金属质感').onChange(controls.change_metalness).onFinishChange(history_push);
     f1_4.add(controls, 'roughness', 0, 1).name('粗糙度').onChange(controls.change_roughness).onFinishChange(history_push);
     f1_4.add(controls, 'reflectivity', 0, 1).name('非金属反光度（金属质感=1时失效）').onChange(controls.change_reflectivity).onFinishChange(history_push);
-    let f1_4_1 = f1_4.addFolder('反光颜色设置');
+    let f1_4_1 = f1_4.addmodel_base('反光颜色设置');
     f1_4_1.addColor(controls, 'model_color').name('取色设置').onChange(controls.change_model_color).onFinishChange(history_push);
     f1_4_1.add(controls, 'model_color_number').name('色值设置').onFinishChange(controls.change_model_color_number).onFinishChange(history_push);
-    let f1_4_2 = f1_4.addFolder('发光颜色设置');
+    let f1_4_2 = f1_4.addmodel_base('发光颜色设置');
     f1_4_2.addColor(controls, 'emissive_color').name('发光颜色').onChange(controls.change_emissive_color).onFinishChange(history_push);
     f1_4_2.add(controls, 'emissive_color_number').name('色值设置').onFinishChange(controls.change_emissive_color_number).onFinishChange(history_push);
     f1_4_2.add(controls, 'emissiveIntensity', 0, 1).step(0.01).name('发光材质不透明度').onChange(controls.change_emissiveIntensity).onFinishChange(history_push);

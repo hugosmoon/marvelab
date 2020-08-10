@@ -30,19 +30,19 @@
             <div style="padding-left: 30px;" >
                 <div id="control-inner">
                     <div style="width: 195px;">
-                        <h3>新建文件夹</h3>
-                        <el-input v-model="folder_name" placeholder="请输入内容"></el-input>
+                        <h3>新建模型库</h3>
+                        <el-input v-model="base_name" placeholder="请输入内容"></el-input>
                         <br><br>
-                        <el-button type="primary" v-on:click="create_folder">新建文件夹</el-button>
+                        <el-button type="primary" v-on:click="create_folder">新建模型库</el-button>
                         <br><br>
                     </div>
                     
                     <div style="width: 400px;">
                     <h3>上传模型</h3>
                     <template>
-                        <el-select v-model="folder_selected" placeholder="选择文件夹" @change="models_show">
+                        <el-select v-model="model_base_id_selected" placeholder="选择模型库" @change="models_show">
                           <el-option
-                            v-for="item in folders"
+                            v-for="item in model_bases"
                             :key="item.value"
                             :label="item.label"
                             :value="item.value">
@@ -54,15 +54,19 @@
 
                     </div>
                     <br><br>
+                    <el-input v-model="new_model_name" placeholder="输入模型名称"></el-input>
+                    <br><br>
                     <el-upload
                     class="upload-demo"
-                    action='/vmm/upload_model/'
+                    action='/vmaker/upload_model/'
                     :data='upload_data'
                     :before-upload="beforeUpload"
                     :on-progress="loading"
                     :on-success="successUpload"
                     :show-file-list=false>
-                    <el-button :disabled="fobiden_upload_status" size="small" type="primary">上传模型</el-button>
+
+                    
+                    <el-button :disabled="fobiden_upload_status" size="small" type="primary">选择模型文件</el-button>
                     <div slot="tip" class="el-upload__tip">只能上传STL文件，且大小不超过50M</div>
                     </el-upload>
 
@@ -75,35 +79,37 @@
         </div>
     </div>
     <script>
-        let owner_id=$.cookie("userid")
+        let owner_id=$.cookie("user_id")
         let Main = {
             data() {
                 return {
-                    folder_name:'',
-                    folders:[],
-                    folder_selected:'',
+                    base_name:'',
+                    new_model_name:'',
+                    model_bases:[],
+                    model_base_id_selected:'',
                     fileList: [],//[{name: 'food.jpeg', url: ''}, {name: 'food2.jpeg', url: ''}], 
                     upload_data:{
-                        folder_id:0
+                        model_base_id:0,
+                        model_name:''
                     }, 
                     fobiden_upload_status:false,                 
                 }                    
                 },
                 mounted:function(){
-                this.get_folders();
-                // this.models_show();
+                this.get_model_base();
 
             },
             methods: {
                 create_folder(){
-                    if(this.folder_name==''){
-                        alert('文件夹名称不能为空');
+                    if(this.base_name==''){
+                        alert('模型库名称不能为空');
                         return false;
                     }
                     this.$http.post(
-                    '/vmm/create_folder/',
+                    '/vmaker/create_model_base/',
                     {
-                        folder_name:this.folder_name
+                        base_name:this.base_name,
+                        owner_id:owner_id
                     },
                     { 
                         emulateJSON: true 
@@ -115,13 +121,13 @@
                             return false;
                         }
                         alert(res.body);
-                        this. folders=[];
-                        this.get_folders();
+                        this. model_bases=[];
+                        this.get_model_base();
                     });
                 },
-                get_folders(){
+                get_model_base(){
                     this.$http.post(
-                    '/vmm/get_folders/',
+                    '/vmaker/get_model_base/',
                     {
                         owner_id:owner_id
                     },
@@ -129,16 +135,17 @@
                         emulateJSON: true 
                     }
                     ).then(function (res) {
-                        res.body.folders.forEach(folder => {
-                            this.folders.push({value: folder.id,label: folder.folder_name});
+                        res.body.model_base_own.forEach(folder => {
+                            this.model_bases.push({value: folder.id,label: folder.base_name});
                         })
                     });
                 },
                 beforeUpload(file){
                     console.log(file.name);
-                    this.upload_data.folder_id=this.folder_selected;
-                    if(this.upload_data.folder_id==0){
-                        this.$message.warning('请选择文件夹');
+                    this.upload_data.model_base_id=this.model_base_id_selected;
+                    this.upload_data.model_name=this.new_model_name;
+                    if(this.upload_data.model_base_id==0){
+                        this.$message.warning('请选择模型库');
                         return false;
                     }
                     let type=file.name.split(".")[1]
@@ -158,9 +165,9 @@
                 },
                 models_show(){
                     this.$http.post(
-                    '/vmm/get_model_by_folderid/',
+                    '/vmaker/get_model_by_base_id/',
                     {
-                        folder_id:this.folder_selected
+                        model_base_id:this.model_base_id_selected
                     },
                     { 
                         emulateJSON: true 

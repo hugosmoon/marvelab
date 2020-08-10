@@ -1,7 +1,7 @@
 function update_models_info(){
     $.ajax({
         type: "POST",
-        url: '/vmm/get_models_by_view/',
+        url: '/vmaker/get_models_by_view/',
         data:{'view_id':display_view_id},
         success:function (res) {
             // console.log(res)

@@ -42,9 +42,9 @@
     <br>
 
     <div id="app">
-        <!-- <el-button onclick="jumpto('/vmm/model_debugger/');" type="primary">场景编辑</el-button><br><br>
-        <el-button onclick="jumpto('/vmm/tool_display/');" type="primary">车刀的主要几何角度</el-button><br><br>
-        <el-button onclick="jumpto('/vmm/qxyl/');" type="primary">切削力与切削用量的关系</el-button> -->
+        <!-- <el-button onclick="jumpto('/vmaker/model_debugger/');" type="primary">场景编辑</el-button><br><br>
+        <el-button onclick="jumpto('/vmaker/tool_display/');" type="primary">车刀的主要几何角度</el-button><br><br>
+        <el-button onclick="jumpto('/vmaker/qxyl/');" type="primary">切削力与切削用量的关系</el-button> -->
       <!-- <div class="new-index-pad">
         <img src="/static/images/login_cover.jpg" width="100%">
       </div>
@@ -53,7 +53,7 @@
         <img src="/static/images/login_cover.jpg" width="100%">
       </div> -->
 
-        <div class="new-index-pad" onclick="window.open('/vmm/model_debugger/')">
+        <div class="new-index-pad" onclick="window.open('/vmaker/view_design/')">
           <img src="/static/images/mxts.png" width="100%">
           <p class="experiment-title">场景搭建</p>
         </div>
@@ -71,9 +71,9 @@
     <div id="app">
       <div class="index" >
         <p class='title1'>工具</p>
-        <el-button onclick="jumpto('/vmm/model_debugger/');" type="primary">场景编辑</el-button><br><br>
-        <el-button onclick="jumpto('/vmm/tool_display/');" type="primary">车刀的主要几何角度</el-button><br><br>
-        <el-button onclick="jumpto('/vmm/qxyl/');" type="primary">切削力与切削用量的关系</el-button>
+        <el-button onclick="jumpto('/vmaker/model_debugger/');" type="primary">场景编辑</el-button><br><br>
+        <el-button onclick="jumpto('/vmaker/tool_display/');" type="primary">车刀的主要几何角度</el-button><br><br>
+        <el-button onclick="jumpto('/vmaker/qxyl/');" type="primary">切削力与切削用量的关系</el-button>
       </div>
       
   </div> -->
@@ -90,10 +90,10 @@
          location.href=url;
     }
     function logout(){
-      jumpto('/vmm/login');
+      jumpto('/vmaker/login');
       $.removeCookie('username',{ path: '/' });
       $.removeCookie('password',{ path: '/' });
-      $.removeCookie('userid',{ path: '/' });
+      $.removeCookie('user_id',{ path: '/' });
     }
   </script>
   <script src="{% static 'main_js/moon.js' %}"></script>

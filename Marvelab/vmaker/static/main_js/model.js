@@ -359,7 +359,7 @@ function Model(view_id,model_id,model_name,url,index,materials_type){
 
 function getPrivateModel(url){
     // this.$http.post(
-    //     '/vmm/get_private_model/',
+    //     '/vmaker/get_private_model/',
     //     {
     //         url: url,
     //     },
@@ -370,7 +370,7 @@ function getPrivateModel(url){
 
         $.ajax({
             type: 'POST',
-            url: "/vmm/get_private_model/" ,
+            url: "/vmaker/get_private_model/" ,
         
             data: {
             'url':url

@@ -15,9 +15,16 @@ from qiniu import Auth, put_file, etag
 import qiniu.config
 import requests
 
-from .views_model import views_model
 
 
 # 首页
+@csrf_exempt
+
 def home(request):
     return render(request, 'index.html')
+
+def view_design(request):
+    return render(request, 'product/view_design.html')
+
+def model_manage(request):
+    return render(request, 'model/model_manage.html')

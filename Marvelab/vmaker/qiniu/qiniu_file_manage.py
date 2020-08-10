@@ -31,7 +31,7 @@ bucket_name = 'hugosmodel'
 
 # #要上传文件的本地路径
 
-# localfile = os.getcwd()+'/vmm/static/images/cdjd.png'
+# localfile = os.getcwd()+'/vmaker/static/images/cdjd.png'
 
 # ret, info = put_file(token, key, localfile)
 # print(info.text_body)
