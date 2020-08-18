@@ -83,11 +83,7 @@ urlpatterns = [
     
     path('get_model_number_by_parent_view_id/',views_view.get_model_number_by_parent_view_id,name='get_model_number_by_parent_view_id'),
     
-    
-
-    
-
-
+    path('delete_model_conf_by_serial/',views_view.delete_model_conf_by_serial,name='delete_model_conf_by_serial'),
     
 ]
 

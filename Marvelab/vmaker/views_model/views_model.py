@@ -120,3 +120,6 @@ def get_model_info_by_id(request):
         data['model'][0]['url']=views_common.get_private_model(data['model'][0]['url'])
         return JsonResponse(data)
 
+
+
+

@@ -193,6 +193,14 @@ def get_model_number_by_parent_view_id(request):
             number+=len(model_confs)
         return HttpResponse(number)
 
+# 根据serial删除子场景中的模型
+@csrf_exempt
+def delete_model_conf_by_serial(request):
+    if request.method == 'POST':
+        serial=request.POST.get('serial')
+        child_view_model_conf.objects.filter(serial=serial).update(is_delete=True)
+        return HttpResponse('成功从场景中删除模型')
+
 
 
 

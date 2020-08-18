@@ -40,7 +40,6 @@ let Main = {
             update_num:0,
             cancle_action_status:true,
             redo_action_status:true,
-            del_model_status:true,
 
             
             // 模型拖动状态,两种拖拽方式
@@ -258,14 +257,10 @@ let Main = {
                     this.child_view_model_list.push({value: views_models_info['models_info'][key].serial,label: views_models_info['models_info'][key].model_name+'('+views_models_info['models_info'][key].serial+')'})
                 }   
             });
-            this.select_model_status=false;
-            // console.log(this.child_view_list[this.child_view_selected]['label'])
-            // this.change_child_view();
-            
+            this.select_model_status=false;        
             this.initDragControls();
         },
         select_model:function(){
-            this.del_model_status=false;
             // drag_serial = this.model_selected;
             // 目标模型上出现十字光标
             transformControls.attach(models[this.model_selected].children[0]);
@@ -542,9 +537,8 @@ let Main = {
         },
         //调试模型参数
         debug_model:function(aim_serial=''){
-            
-            if(this.model_gui){this.model_gui.destroy();}
-            this.model_gui = new dat.GUI();
+            this.destory_model_gui();
+            this.create_model_gui();
             this.model_gui.width=400; 
             let serial=this.model_selected;
             if(aim_serial!=''){
@@ -703,7 +697,7 @@ let Main = {
                 };
             }
             let f1 = this.model_gui;
-            f1.add({m:''},'m').name(controls.model_name+'-'+serial);
+            f1.add({m:controls.model_name+'-'+serial},'m').name('模型名称');
             f1.add(controls, 'x', -5000, 5000).name('X轴移动').step(0.01).onChange(controls.move_x).onFinishChange(history_push);
             f1.add(controls, 'y', -5000, 5000).name('Y轴移动').step(0.01).onChange(controls.move_y).onFinishChange(history_push);
             f1.add(controls, 'z', -5000, 5000).name('Z轴移动').step(0.01).onChange(controls.move_z).onFinishChange(history_push);
@@ -727,6 +721,22 @@ let Main = {
             // f1_4_2.add(controls, 'emissive_color_number').name('色值设置').onFinishChange(controls.change_emissive_color_number).onFinishChange(history_push);
             f1_4_2.add(controls, 'emissiveIntensity', 0, 1).step(0.01).name('发光材质不透明度').onChange(controls.change_emissiveIntensity).onFinishChange(history_push);
         },
+        // 销毁当前的model_gui,如果当前没有model_gui,则什么都不会发生
+        destory_model_gui(){
+            if(this.model_gui&&!this.model_gui.destoryed){
+                this.model_gui.destroy();
+                this.model_gui.destoryed=true;
+            }
+        },
+        // 创建新的model_gui
+        create_model_gui(){
+            if(this.model_gui&&!this.model_gui.destoryed){
+                console.log("已经有了model_gui")
+                return false;
+            }
+            this.model_gui = new dat.GUI();
+            this.model_gui.destoryed=false;
+        },
         cancle_action:function(){            
             if(action_anchor<=0){
                 this.cancle_action_status=true;
@@ -749,8 +759,6 @@ let Main = {
                 views_models_info['models_info'][i].change_po_x(views_models_info_history[anchor]['models_info'][i].position_x)
                 views_models_info['models_info'][i].change_po_y(views_models_info_history[anchor]['models_info'][i].position_y)
                 views_models_info['models_info'][i].change_po_z(views_models_info_history[anchor]['models_info'][i].position_z)
-                
-                // models_info[index].change_ro(model.rotation_x,model.rotation_y,model.rotation_z)
                 views_models_info['models_info'][i].change_ro_x(views_models_info_history[anchor]['models_info'][i].rotation_x)
                 views_models_info['models_info'][i].change_ro_y(views_models_info_history[anchor]['models_info'][i].rotation_y)
                 views_models_info['models_info'][i].change_ro_z(views_models_info_history[anchor]['models_info'][i].rotation_z)
@@ -760,7 +768,6 @@ let Main = {
                 views_models_info['models_info'][i].change_materials_color_r(views_models_info_history[anchor]['models_info'][i].materials_color_r)
                 views_models_info['models_info'][i].change_materials_color_g(views_models_info_history[anchor]['models_info'][i].materials_color_g)
                 views_models_info['models_info'][i].change_materials_color_b(views_models_info_history[anchor]['models_info'][i].materials_color_b)
-
                 views_models_info['models_info'][i].change_metalness(views_models_info_history[anchor]['models_info'][i].metalness)
                 views_models_info['models_info'][i].change_roughness(views_models_info_history[anchor]['models_info'][i].roughness)
                 views_models_info['models_info'][i].change_emissive_r(views_models_info_history[anchor]['models_info'][i].emissive_r)
@@ -776,7 +783,7 @@ let Main = {
               cancelButtonText: '取消',
               type: 'warning'
             }).then(() => {
-              this.delete_model();
+              this.delete_model(this.model_selected);            
               this.$message({
                 type: 'success',
                 message: '删除成功!'
@@ -788,37 +795,33 @@ let Main = {
               });          
             });
           },
-        delete_model:function(){
-            this.model_selected='';
-            scene.remove(models[this.model_selected]);
-            // this.model_list.forEach(function(item, index, arr) {
-            //     if(item.value==current_model_index) {
-            //         arr.splice(index, 1);
-            //     }
-            // });
-
-            delete views_models_info['models_info'][this.model_selected];
-            delete models[this.model_selected];
-            // models_info[current_model_index]=null;
-            // models[current_model_index]=null;
-            // this.$http.post(
-            //     '/vmm/delete_model/',
-            //     {
-            //         view_id:current_view_id,
-            //         model_index:current_model_index
-            //     },
-            //     { emulateJSON: true }
-            // ).then(function (res){
-            //     if(transformControls){
-            //         this.models_num_view=0;
-                    
-            //     }
-            // })
-
+        delete_model:function(serial){
+            if(serial&&views_models_info['models_info'][serial]&&models[serial]){
+                delete views_models_info['models_info'][serial];
+                scene.remove(models[serial]);
+                delete models[serial];
+                console.log('删除')
+            }
+            if(transformControls){
+                transformControls.detach();
+            }
+            this.destory_model_gui();
+            this.child_view_model_list.forEach(function(item, index, arr) {
+                if(item.value==serial) {
+                    arr.splice(index, 1);
+                }
+            });
+            this.$http.post(
+                '/vmaker/delete_model_conf_by_serial/',
+                {
+                    serial:serial
+                },
+                { emulateJSON: true }
+                ).then(function (res){
+                    console.log(res.body)
+                })
         },  
     },
-    
-    
 }
 let Ctor = Vue.extend(Main)
 new Ctor().$mount('#app')
