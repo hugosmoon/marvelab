@@ -15,6 +15,8 @@
 
 THREE.OrbitControls = function ( object, domElement ) {
 
+	this.lookAt_point={}
+
 	this.object = object;
 
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -177,6 +179,11 @@ THREE.OrbitControls = function ( object, domElement ) {
 			offset.applyQuaternion( quatInverse );
 
 			position.copy( scope.target ).add( offset );
+
+			// console.log(scope.target.x);
+			this.lookAt_point['x']=scope.target.x;
+			this.lookAt_point['y']=scope.target.y;
+			this.lookAt_point['z']=scope.target.z;
 
 			scope.object.lookAt( scope.target );
 

@@ -154,3 +154,46 @@ class visit_log(models.Model):
     ip = models.CharField(max_length=255, db_column="ip") 
     city = models.CharField(default="",max_length=255, db_column="city") 
     createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
+
+class camera(models.Model):
+    id = models.AutoField(primary_key=True, db_column="id")
+    parent_view = models.ForeignKey(
+        'parent_view',
+        on_delete=models.CASCADE,
+        db_column="parent_view"
+    )
+    camera_name = models.CharField(max_length=255, db_column="camera_name")
+    position_x=models.FloatField(default=0,db_column="position_x")
+    position_y=models.FloatField(default=0,db_column="position_y")
+    position_z=models.FloatField(default=0,db_column="position_z")
+    up_x=models.IntegerField(default=0,db_column="up_x")
+    up_y=models.IntegerField(default=0,db_column="up_y")
+    up_z=models.IntegerField(default=1,db_column="up_z")
+    lookAt_x=models.FloatField(default=0,db_column="lookAt_x")
+    lookAt_y=models.FloatField(default=0,db_column="lookAt_y")
+    lookAt_z=models.FloatField(default=0,db_column="lookAt_z")
+    createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
+    updatetime = models.DateTimeField(default=timezone.now, db_column="updatetime")
+    is_delete = models.BooleanField(default=False, db_column="is_delete")
+
+# class parent_view_camera_conf(models.Model):
+#     id = models.AutoField(primary_key=True, db_column="id")
+#     parent_view = models.ForeignKey(
+#         'parent_view',
+#         on_delete=models.CASCADE,
+#         db_column="parent_view"
+#     )
+#     camera = models.ForeignKey(
+#         'camera',
+#         on_delete=models.CASCADE,
+#         db_column="camera"
+#     )
+#     position_x=models.FloatField(default=0,db_column="position_x")
+#     position_y=models.FloatField(default=0,db_column="position_y")
+#     position_z=models.FloatField(default=0,db_column="position_z")
+#     lookAt_x=models.FloatField(default=0,db_column="lookAt_x")
+#     lookAt_y=models.FloatField(default=0,db_column="lookAt_y")
+#     lookAt_z=models.FloatField(default=0,db_column="lookAt_z")
+#     createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
+#     updatetime = models.DateTimeField(default=timezone.now, db_column="updatetime")
+#     is_delete = models.BooleanField(default=False, db_column="is_delete")

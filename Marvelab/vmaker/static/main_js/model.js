@@ -7,6 +7,8 @@ let views_models_info={
     'models_info':{},
     'views_info':{}
 };
+let camera_info=new Camera_info();
+
 ////模型实体列表
 let models={};
 
@@ -44,7 +46,7 @@ function initThree(debug) {
     renderer.setSize(window.innerWidth, window.innerHeight);//设置渲染的宽度和高度
     document.getElementById('render').appendChild(renderer.domElement);//将渲染器加在html中的div里面
 
-    renderer.setClearColor(0x505050, 1.0);//渲染的颜色设置
+    renderer.setClearColor(0x202040, 0.5);//渲染的颜色设置
     // renderer.shadowMap.enabled = true;//开启阴影，默认是关闭的，太影响性能
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;//阴影的一个类型
 
@@ -52,13 +54,14 @@ function initThree(debug) {
     // camera = new THREE.OrthographicCamera(window.innerWidth , window.innerWidth , window.innerHeight, window.innerHeight , -20000, 50000);
 
     //摄像机的位置
-    camera.position.x = 200;
-    camera.position.y = -5000;
-    camera.position.z = 1000;
-    camera.up.x = 0;
-    camera.up.y = 0;
-    camera.up.z = 1;//摄像机的上方向是Z轴
-    camera.lookAt(0, -50, 0);//摄像机对焦的位置
+    // console.log(camera_info.position.x);
+    camera.position.x = camera_info.position.x;//200;
+    camera.position.y = camera_info.position.y;//-5000;
+    camera.position.z = camera_info.position.z;//1000;
+    camera.up.x = camera_info.up.x;
+    camera.up.y = camera_info.up.y;
+    camera.up.z = camera_info.up.z;//1;//摄像机的上方向是Z轴
+    camera.lookAt(camera_info.lookAt.x, camera_info.lookAt.y, camera_info.lookAt.z);//摄像机对焦的位置(0, -50, 0)
     //这三个参数共同作用才能决定画面
 
     scene = new THREE.Scene();
@@ -94,15 +97,18 @@ function initThree(debug) {
     controller = new THREE.OrbitControls(camera, renderer.domElement);
     controller.target = new THREE.Vector3(0, 0, 0);
 
-    let color=new THREE.Color(0x595959);
+    let color=new THREE.Color(0x151535);
     let helper = new THREE.GridHelper(50000, 50, color, color);
     helper.rotation.x=Math.PI*0.5;
     helper.position.z = -2000;
+    
+    helper.material.opacity=0
+    // console.log(helper)
 
     scene.add(helper);
 
     if(debug==1){     
-            let color1 = new THREE.Color( 0xff0000 ), color2= new THREE.Color( 0x00ff00 ), color3= new THREE.Color( 0x0000ff );
+            let color1 = new THREE.Color( 0xff0000 ), color2= new THREE.Color( 0x00ff00 ), color3= new THREE.Color( 0x6666ff );
             // 线的材质可以由2点的颜色决定
             let p1 = new THREE.Vector3( -25000, 0, 0 );
             let p2 = new THREE.Vector3( 25000, 0, 0 );
@@ -180,6 +186,77 @@ function initObject(index) {
         models_view_control_arguments.models_loaded();
 
     });  
+}
+
+// 相机对象
+function Camera_info(){
+    this.position={
+        x:200,
+        y:-5000,
+        z:1000,
+    };
+    this.up={
+        x:0,
+        y:0,
+        z:1
+    };
+    this.lookAt={
+        x:0,
+        y:-50,
+        z:0
+    };
+    this.change=function(o,axis,num){
+        switch (o) {
+            case 'position':
+                switch (axis){
+                    case 'x':
+                        this.position.x=num;
+                        camera.position.x=num;
+                        break;
+                    case 'y':
+                        this.position.y=num;
+                        camera.position.y=num;
+                        break;
+                    case 'z':
+                        this.position.z=num;
+                        camera.position.z=num;
+                        break;
+                };
+                break;
+            case 'up':
+                switch (axis){
+                    case 'x':
+                        this.up.x=num;
+                        camera.up.x=num;
+                        break;
+                    case 'y':
+                        this.up.y=num;
+                        camera.up.y=num;
+                        break;
+                    case 'z':
+                        this.up.z=num;
+                        camera.up.z=num;
+                        break;
+                };
+                break;
+            case 'lookAt':
+                switch (axis){
+                    case 'x':
+                        this.lookAt.x=num;
+                        camera.lookAt(this.lookAt.x,this.lookAt.y,this.lookAt.z);
+                        break;
+                    case 'y':
+                        this.lookAt.y=num;
+                        camera.lookAt(this.lookAt.x,this.lookAt.y,this.lookAt.z);
+                        break;
+                    case 'z':
+                        this.lookAt.z=num;
+                        camera.lookAt(this.lookAt.x,this.lookAt.y,this.lookAt.z);
+                        break;
+                };
+                break;
+        }
+    }
 }
 
 //模型对象

@@ -84,6 +84,11 @@ urlpatterns = [
     path('get_model_number_by_parent_view_id/',views_view.get_model_number_by_parent_view_id,name='get_model_number_by_parent_view_id'),
     
     path('delete_model_conf_by_serial/',views_view.delete_model_conf_by_serial,name='delete_model_conf_by_serial'),
+    # 新建相机
+    path('create_camera/',views_view.create_camera,name='create_camera'),
+    path('get_cameras_by_parent_view_id/',views_view.get_cameras_by_parent_view_id,name='get_cameras_by_parent_view_id'),
+    path('get_camera_by_id/',views_view.get_camera_by_id,name='get_camera_by_id'),
     
+
 ]
 

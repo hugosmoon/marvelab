@@ -63,11 +63,12 @@
                     </el-option>
                 </el-select>
                 <br><br>
-                <el-button id="parent_view_confirm" type="success" v-on:click="load_parent_view" :disabled="parent_view_name_select_disable_status" size="mini">载入场景</el-button>  
+                <el-button type="primary" v-on:click="create_parent_view" :disabled="parent_view_name_select_disable_status" size="mini">新建场景</el-button>
+                <el-button id="parent_view_confirm" type="success" v-on:click="load_parent_view" :disabled="!parent_view_selected||parent_view_name_select_disable_status" size="mini">载入场景</el-button>  
                 <el-progress v-if="loding_status" :percentage="loding_percentage" :color="percentageColors"></el-progress>
                 <br><br>
                 <p  id="title2" style="color: aqua;">选择子场景</p>
-                <el-select v-model="child_view_selected" placeholder="选择子场景" @change="update_child_view_models_list();debug_child_view()" size="mini">
+                <el-select v-model="child_view_selected" placeholder="选择子场景" :disabled="!parent_view_name_select_disable_status" @change="update_child_view_models_list();debug_child_view()" size="mini">
                     <el-option
                     v-for="item in child_view_list"
                     :key="item.value"
@@ -76,8 +77,10 @@
                     </el-option>
                 </el-select>
                 <br><br>
-                <p id="title2" style="color: aqua;">选择模型</p>
-                <el-select v-model="model_selected" placeholder="选择想要设置的模型" @change="select_model();debug_model();" size="mini">
+                <el-button type="primary" v-on:click="create_child_view" :disabled="!parent_view_name_select_disable_status" size="mini">新建子场景</el-button>
+                <br><br>
+                <p id="title2" style="color: aqua;">子场景中模型</p>
+                <el-select v-model="model_selected" placeholder="选择想要设置的模型" :disabled="!child_view_selected" @change="select_model();debug_model();" size="mini">
                     <el-option
                     v-for="item in child_view_model_list"
                     :key="item.value"
@@ -110,7 +113,19 @@
                     <el-button type="success" v-on:click="add_model" size="mini" :disabled="add_model_status">添加至场景</el-button>
                 </div>
                 <el-button style="margin-top: 20px;" type="info" v-on:click="view_display" size="mini" :disabled="!display_status">预览场景</el-button id="button1"> 
-                <el-button style="margin-top: 20px;" type="success" v-on:click="save_view" size="mini" :disabled="!save_status">存储场景</el-button id="button1">          
+                <el-button style="margin-top: 20px;" type="success" v-on:click="save_view" size="mini" :disabled="!parent_view_name_select_disable_status">存储场景</el-button id="button1">
+                <br><br>
+                <p  id="title2" style="color: aqua;">选择视角</p>    
+                <el-select v-model="camera_selected" placeholder="选择视角" @change="select_camera" size="mini" :disabled="!parent_view_name_select_disable_status">
+                        <el-option
+                        v-for="item in camera_list"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                        </el-option>
+                </el-select>
+                <br>
+                <el-button style="margin-top: 20px;" type="success" v-on:click="save_camera" size="mini" :disabled="!parent_view_name_select_disable_status">存储当前视角</el-button id="button1">         
             </div> 
             <div class="left-top-2">
                 <el-button-group>

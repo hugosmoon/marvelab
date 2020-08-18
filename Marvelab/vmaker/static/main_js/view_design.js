@@ -31,8 +31,6 @@ let Main = {
             add_model_status:true,
             // 是否可以预览场景
             display_status:false,
-            // 是否可以保存场景
-            save_status:true,
             // views_models_info的哈希值，校验是否需要保存
             views_models_info_hashcode:0,
             
@@ -51,9 +49,16 @@ let Main = {
             drag_objects:[],
             model_gui:null,
             child_view_gui:null,
+            camera_gui:null,
 
             // 模型增加已经开启，加载可能尚未结束
             model_adding:false,
+
+            // 视角相关
+            camera_selected:'',
+            camera_list:[],
+            camera_info_list:{},
+
         }
     },
     mounted:function(){
@@ -63,6 +68,25 @@ let Main = {
         this.get_parent_views();
         this.timer = setInterval(this.update_data, 500);
         this.get_model_base();
+        this.listen_action();
+        // this.debug_camera();s
+    },
+    watch:{
+        // loding_status(){
+        //     if(this.will_load_models_number<=models_view_control_arguments['models_load_this_time_sum']){
+        //         this.loding_status=false;
+        //         if(models_view_control_arguments['models_load_sum']==models_view_control_arguments['models_load_this_time_sum'])
+        //         {
+        //             history_push();
+        //         }  
+        //     }
+        //     this.loding_percentage=models_view_control_arguments['models_load_this_time_sum']/this.will_load_models_number;
+        // },
+        // camera_gui(){
+        // }
+        parent_view_selected(){
+            this.get_camera_by_parent_view_id();
+        }
     },
     methods: {
         // 定时更新
@@ -82,9 +106,14 @@ let Main = {
             // 当child_view中有新模型加入时，更新至可拖动范围中
             if(this.model_adding&&models_view_control_arguments['model_loaded_status']&&this.child_view_selected!=''){
                 //添加完成
-                this.initDragControls()
-                models_view_control_arguments['model_loaded_status']=false;
-                this.model_adding=false;
+                try{
+                    this.initDragControls()
+                    models_view_control_arguments['model_loaded_status']=false;
+                    this.model_adding=false;
+                }
+                catch{
+                    console.log("有空学习异步编程")
+                }    
             }
             // 前进一步，后退一步
             if(views_models_info_history.length>1){
@@ -100,6 +129,19 @@ let Main = {
                 else{
                     this.redo_action_status=true;
                 }
+            }
+            // // 同步camera_gui和camera
+            if(camera){
+                camera_info.position.x=camera.position.x;
+                camera_info.position.y=camera.position.y;
+                camera_info.position.z=camera.position.z;
+                camera_info.lookAt.x=controller.lookAt_point.x;
+                camera_info.lookAt.y=controller.lookAt_point.y;
+                camera_info.lookAt.z=controller.lookAt_point.z;
+                // this.debug_camera();
+                // camera_info.lookAt.x=camera.position.x;
+                // camera_info.lookAt.y=camera.position.y;
+                // camera_info.lookAt.z=camera.position.z;
             }
 
 
@@ -151,7 +193,69 @@ let Main = {
         parent_view_change:function(){
             
         },
+        // 创建母场景
+        create_parent_view:function(){
+            this.$prompt('输入场景名称（不能与现有场景名称重复）', '新建场景', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                // inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]/,
+                // inputErrorMessage: '名称格式不正确'
+            }).then(({ value }) => {
+                this.$http.post(
+                    '/vmaker/add_parent_view/',
+                    {
+                        view_name:value,
+                        owner_id:this.owner_id
+                    },
+                    { emulateJSON: true }
+                    ).then(function (res) {
+                        this.$message({
+                            type: res.body.message_type,
+                            duration: 3000,
+                            message: res.body.message
+                        });
+                        if(res.body.message_type=='success'){
+                            this.parent_views_list.push({value: res.body.new_parent_view_id,label: res.body.new_parent_view_name});
+                        }
+                        return res.body;
+                    });   
+            }).catch(e=>e);
+             
+        },
+        // 创建子场景
+        create_child_view:function(){
+            if(!this.parent_view_selected){
+                console.log('未选中母场景')
+                return false;
+            }
+            this.$prompt('输入场景名称（不能与现有子场景名称重复）', '新建场景', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                // inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]/,
+                // inputErrorMessage: '名称格式不正确'
+            }).then(({ value }) => {
+                this.$http.post(
+                    '/vmaker/add_child_view/',
+                    {
+                        view_name:value,
+                        parent_view_id:this.parent_view_selected
+                    },
+                    { emulateJSON: true }
+                    ).then(function (res) {
+                        this.$message({
+                            type: res.body.message_type,
+                            duration: 3000,
+                            message: res.body.message
+                        });
+                        if(res.body.message_type=='success'){
+                            this.child_view_list.push({value: res.body.new_child_view_id,label: res.body.new_child_view_name});
+                        }
+                        this.load_child_view_model(res.body.new_child_view_id);
+                        return res.body;
+                    }); 
+            });
 
+        },
         // 加载选中的母场景的所有模型
         load_parent_view:function(){
             if(this.parent_view_selected==''){
@@ -185,6 +289,7 @@ let Main = {
                 })
             })            
             this.get_child_views(this.parent_view_selected);
+            this.parent_view_name_select_disable_status=true;
         },
 
         // 根据场景的ID加载所有子场景场景中的模型
@@ -364,8 +469,8 @@ let Main = {
                 });
         },
         initDragControls:function(){
-            console.log((Object.keys(models).length))
-            console.log(this.child_view_selected)
+            // console.log((Object.keys(models).length))
+            // console.log(this.child_view_selected)
             let main = this;
             // 将当前选中的child_view模型初始化到模型列表中
             let models_to_control=[];
@@ -374,7 +479,7 @@ let Main = {
                     models_to_control.push(models[key]);
                 }
             })
-            console.log(models_to_control)
+            // console.log(models_to_control)
 
             // 添加平移控件
             if(!transformControls){
@@ -407,7 +512,10 @@ let Main = {
                     main.drag_objects.push(models_to_control[i].children[0]);   
                 }
             }
+            // 当重新加载时，把之前的选择监听事件删除
             if(dragControls){
+                dragControls.enabled=false;
+                dragControls.deactivate();
                 scene.remove(dragControls);
             }
             // 初始化拖拽控件
@@ -495,6 +603,79 @@ let Main = {
             }
 
         },
+        // 调试相机参数
+        debug_camera:function(){
+            if(this.camera_gui){
+                this.camera_gui.destroy();
+            }
+            this.camera_gui = new dat.GUI();
+            this.camera_gui.width=300;
+            let controls = new function () {
+                this.position_x=camera_info.position.x;
+                this.position_y=camera_info.position.y;
+                this.position_z=camera_info.position.z;
+
+                this.up_x=camera_info.up.x;
+                this.up_y=camera_info.up.y;
+                this.up_z=camera_info.up.z;
+
+                this.lookAt_x=camera_info.lookAt.x;
+                this.lookAt_y=camera_info.lookAt.y;
+                this.lookAt_z=camera_info.lookAt.z;
+                // this.position={
+                //     x:camera_info.position.x,
+                //     y:camera_info.position.y,
+                //     z:camera_info.position.z
+                // };
+                // this.up={
+                //     x:camera_info.up.x,
+                //     y:camera_info.up.y,
+                //     z:camera_info.up.z
+                // };
+                // this.lookAt={
+                //     x:camera_info.lookAt.x,
+                //     y:camera_info.lookAt.y,
+                //     z:camera_info.lookAt.z
+                // };
+                this.change_position_x=function(x){
+                    camera_info.change('position','x',x);
+                }
+                this.change_position_y=function(x){
+                    camera_info.change('position','y',x);
+                }
+                this.change_position_z=function(x){
+                    camera_info.change('position','z',x);
+                }
+
+                this.change_up_x=function(x){
+                    camera_info.change('up','x',x);
+                }
+                this.change_up_y=function(x){
+                    camera_info.change('up','y',x);
+                }
+                this.change_up_z=function(x){
+                    camera_info.change('up','z',x);
+                }
+
+                this.change_lookAt_x=function(x){
+                    camera_info.change('lookAt','x',x);
+                }
+                this.change_lookAt_y=function(x){
+                    camera_info.change('lookAt','y',x);
+                }
+                this.change_lookAt_z=function(x){
+                    camera_info.change('lookAt','z',x);
+                }
+            }
+            this.camera_gui.add({m:''},'m').name('相机参数');
+            this.camera_gui.add(controls, "position_x", -25000, 25000).name('位置-X').onChange(controls.change_position_x).onFinishChange(history_push);
+            this.camera_gui.add(controls, "position_y", -25000, 25000).name('位置-X').onChange(controls.change_position_y).onFinishChange(history_push);
+            this.camera_gui.add(controls, "position_z", -25000, 25000).name('位置-X').onChange(controls.change_position_z).onFinishChange(history_push);
+            this.camera_gui.add(controls, "lookAt_x", -25000, 25000).name('lookAt-X').onChange(controls.change_lookAt_x).onFinishChange(history_push);
+            this.camera_gui.add(controls, "lookAt_y", -25000, 25000).name('lookAt-X').onChange(controls.change_lookAt_y).onFinishChange(history_push);
+            this.camera_gui.add(controls, "lookAt_z", -25000, 25000).name('lookAt-X').onChange(controls.change_lookAt_z).onFinishChange(history_push);
+
+        },
         // 调试场景参数
         debug_child_view:function(){
             let child_view_id=this.child_view_selected;
@@ -530,7 +711,7 @@ let Main = {
                     }
                 };
             }
-            this.child_view_gui.add({m:''},'m').name(views_models_info['views_info']['v'+child_view_id].child_view_name);
+            this.child_view_gui.add({m:views_models_info['views_info']['v'+child_view_id].child_view_name},'m').name('子场景名称');
             this.child_view_gui.add(controls, 'all_mov_x', -25000, 25000).name('整体位置-X').onChange(controls.change_all_mov_x).onFinishChange(history_push);
             this.child_view_gui.add(controls, 'all_mov_y', -25000, 25000).name('整体位置-Y').onChange(controls.change_all_mov_y).onFinishChange(history_push);
             this.child_view_gui.add(controls, 'all_mov_z', -25000, 25000).name('整体位置-Z').onChange(controls.change_all_mov_z).onFinishChange(history_push);
@@ -744,6 +925,7 @@ let Main = {
             }
             action_anchor=action_anchor-1;
             this.update_models_info_by_action_anchor(action_anchor);
+            this.transformControls_foucs_model_selected();
         },
         redo_action:function(){
             if(action_anchor>=views_models_info_history.length-1){
@@ -751,7 +933,8 @@ let Main = {
                 return false;
             }
             action_anchor=action_anchor+1;
-            this.update_models_info_by_action_anchor(action_anchor);       
+            this.update_models_info_by_action_anchor(action_anchor);  
+            this.transformControls_foucs_model_selected();     
         },
         update_models_info_by_action_anchor:function(anchor){
             // console.log("更改设置")
@@ -820,7 +1003,88 @@ let Main = {
                 ).then(function (res){
                     console.log(res.body)
                 })
-        },  
+        },
+        // 让选择十字光标位于当前被选中的模型中心
+        transformControls_foucs_model_selected:function(){
+            if(models[this.model_selected]){
+                transformControls.attach(models[this.model_selected].children[0])
+            }
+        },
+        // 取消模型选中
+        cancle_model_selected:function(){
+            transformControls.detach();
+            this.destory_model_gui();
+            let m = this.model_selected;
+            this.model_selected='';
+            return m;
+        },
+        // 监听键盘
+        listen_action:function(){
+            let self = this;
+            this.$nextTick(function () {
+                document.addEventListener('keyup', function (e) {
+                    //esc键
+                    if (e.keyCode == 27) {
+                        self.cancle_model_selected();
+                    }
+                })
+            });
+        },
+        save_camera:function(){
+            this.$prompt('输入视野名称（不能与现有视野名称重复）', '保存当前视野', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                // inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]/,
+                // inputErrorMessage: '名称格式不正确'
+            }).then(({ value }) => {
+                this.$http.post(
+                    '/vmaker/create_camera/',
+                    {
+                        camera_info:JSON.stringify(camera_info),
+                        parent_view_id:this.parent_view_selected,
+                        camera_name:value
+                    },
+                    { emulateJSON: true }
+                    ).then(function (res) {
+                        this.get_camera_by_parent_view_id();
+                    });
+            });   
+        },
+        select_camera:function(){
+            if(this.camera_selected){
+                let o=['position','up','lookAt'];
+                let axis=['x','y','z'];
+                o.forEach(o_key =>{
+                    axis.forEach(a_key =>{
+                        camera_info.change(o_key,a_key,this.camera_info_list['c'+this.camera_selected][o_key][a_key])
+                    })
+                });
+                //更新controller，让场景移动连续
+                controller.target = new THREE.Vector3(camera_info.lookAt.x, camera_info.lookAt.y, camera_info.lookAt.z);
+                controller.position0 = new THREE.Vector3(camera_info.position.x, camera_info.position.y, camera_info.position.z);
+
+            }
+
+        },
+        // 根据parent_view_id取回所有的视角
+        get_camera_by_parent_view_id:function(){
+            this.$http.post(
+                '/vmaker/get_cameras_by_parent_view_id/',
+                {
+                    parent_view_id:this.parent_view_selected
+                },
+                { emulateJSON: true }
+                ).then(function(res){
+                    this.camera_info_list={};
+                    this.camera_list=[];
+                    let cs=res.body.cameras;
+                    cs.forEach(c =>{
+                        this.camera_info_list['c'+c['id']]=c;
+                        this.camera_list.push({value: c.id,label: c.camera_name});
+                    })
+                })
+        }
+
     },
 }
 let Ctor = Vue.extend(Main)
