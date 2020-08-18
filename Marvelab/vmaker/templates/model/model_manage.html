@@ -40,7 +40,7 @@
                     <div style="width: 400px;">
                     <h3>上传模型</h3>
                     <template>
-                        <el-select v-model="model_base_id_selected" placeholder="选择模型库" @change="models_show">
+                        <el-select v-model="model_base_id_selected" placeholder="选择模型库" @change="models_show();update_fobiden_upload_status()">
                           <el-option
                             v-for="item in model_bases"
                             :key="item.value"
@@ -54,7 +54,7 @@
 
                     </div>
                     <br><br>
-                    <el-input v-model="new_model_name" placeholder="输入模型名称"></el-input>
+                    <el-input v-model="new_model_name" placeholder="输入模型名称" @change="update_fobiden_upload_status()"></el-input>
                     <br><br>
                     <el-upload
                     class="upload-demo"
@@ -92,7 +92,7 @@
                         model_base_id:0,
                         model_name:''
                     }, 
-                    fobiden_upload_status:false,                 
+                    fobiden_upload_status:true,                 
                 }                    
                 },
                 mounted:function(){
@@ -148,6 +148,10 @@
                         this.$message.warning('请选择模型库');
                         return false;
                     }
+                    if(this.upload_data.model_name==''){
+                        this.$message.warning('请输入模型名称');
+                        return false;
+                    }
                     let type=file.name.split(".")[1]
                     if(type!='STL'&&type!='stl'){
                         this.$message.warning('只能上传STL格式的模型')
@@ -181,6 +185,12 @@
                         $("#models_show").html(models_string);
                     });
 
+                    
+                },
+                update_fobiden_upload_status(){
+                    if(this.new_model_name!=''&&this.model_base_id_selected!=''){
+                        this.fobiden_upload_status=false;
+                    }
                     
                 }
             }

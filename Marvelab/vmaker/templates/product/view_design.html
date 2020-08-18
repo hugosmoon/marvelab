@@ -49,120 +49,79 @@
         <div id="app">
             <div id="mask" ref="mask">
                 <div ref="progress" style="width:20%; text-align:center;">
-                <p v-if="progress_status" style="color: blanchedalmond;">模型加载中</p>
-                <el-progress v-if="progress_status" :text-inside="true" :stroke-width="26" :percentage="progress_data"></el-progress>
+                <!-- <p v-if="progress_status" style="color: blanchedalmond;">模型加载中</p>
+                <el-progress v-if="progress_status" :text-inside="true" :stroke-width="26" :percentage="progress_data"></el-progress> -->
                 </div>
             </div>
             <div class="control">
-                    <el-button type="primary" v-on:click="add_parent_view" :disabled="enter_view_name" size="mini">新建场景</el-button>
-                    <el-button  type="primary" v-on:click="add_child_view" :disabled="child_view_status" size="mini">新建子场景</el-button>
-                    <p id="title2" style="color: aqua;">选择场景</p>
-                    <el-select v-model="view_selected" placeholder="请选择场景" :disabled="enter_view_name" @change="select_view" size="mini">
-                        <el-option
-                        v-for="item in views_list"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                        </el-option>
-                    </el-select>
-                    <!-- <el-input v-model="view_selected" placeholder="输入场景名称" :disabled="enter_view_name"></el-input> -->
-                    <br>
-                    <el-button id="button1" type="success" v-on:click="save_view_name" :disabled="enter_view_name" size="mini">载入场景</el-button> 
-                    <el-button id="button1" type="success" v-on:click="view_program" :disabled="!enter_view_name" size="mini">场景编程</el-button>
-                    <p  id="title2" style="color: aqua;">选择子场景</p>
-                    <el-select v-model="child_view_selected" placeholder="选择子场景" @change="get_models_by_child_view" size="mini">
-                        <el-option
-                        v-for="item in child_view_list"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                        </el-option>
-                    </el-select>
-                    <p  id="title2" style="color: aqua;">选择模型</p>
-                    
-                    <el-select v-model="model_selected" placeholder="选择想要设置的模型" @change="select_model" size="mini">
-                        <el-option
-                        v-for="item in model_list"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                        </el-option>
-                    </el-select>
-                    
-                    <div style="color: aqua;" v-html="model_information"></div>
-                    
-                    <el-button  id="button1"  type="danger" v-on:click="delete_model_confirm" size="mini" :disabled="del_model_status" >删除选中模型</el-button>
-                    
-                    <p id="title2" style="color: aqua;">添加模型  <a style="color:rgb(111, 111, 255);font-size: 12px;font-weight: lighter;margin-left: 70px;" v-on:click="to_manage_models">模型库>></a></p>
-                
-                    <div v-if="model_type=='0'">
-                        <div id="select1">
-                            <el-select v-model="model_base_selected" placeholder="选择模型库" @change="get_model_by_model_base" size="mini" :disabled="select_model_status">
-                                <el-option
-                                v-for="item in base_list"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </div>
-                        <div id="select1">
-                            <el-select v-model="model_in_model_base_selected" placeholder="选择想要添加的模型" @change="select_model_in_model_base" size="mini" :disabled="select_model_status">
-                                <el-option
-                                v-for="item in model_in_base_list"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </div>
-                    </div>
-                    <div v-if="model_type!='0'">
-                        <div id="select1">
-                            <el-select v-model="model_type" placeholder="选择几何体类型" @change="" size="mini" :disabled="select_model_status">
-                                <el-option
-                                v-for="item in model_type_list"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </div>
-                        <div id="select1" v-if="model_type=='1'">
-                            <el-input v-model="input" placeholder="请输入内容"></el-input>
-                        </div>
-                    </div>    
-                    <div id="select1">
-                    <el-button type="success" v-on:click="add_model" size="mini" :disabled="add_model_status">添加至场景</el-button>
-                    </div>
-                    <el-button style="margin-top: 20px;" type="info" v-on:click="view_display" size="mini" :disabled="display_status">预览场景</el-button id="button1"> 
-                    <el-button style="margin-top: 20px;" type="success" v-on:click="save_model" size="mini" :disabled="save_status">存储场景</el-button id="button1"> 
-                    
-                    
-                        <!-- <el-button style="margin-top: 20px;" type="success" v-on:click="delte_attach" size="mini">删除</el-button id="button1"> -->
-                    
-                      
+                <el-select id="parent_view_select" v-model="parent_view_selected" placeholder="请选择场景" :disabled="parent_view_name_select_disable_status" @change="parent_view_change" size="mini">
+                    <el-option
+                    v-for="item in parent_views_list"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    </el-option>
+                </el-select>
+                <br><br>
+                <el-button id="parent_view_confirm" type="success" v-on:click="load_parent_view" :disabled="parent_view_name_select_disable_status" size="mini">载入场景</el-button>  
+                <el-progress v-if="loding_status" :percentage="loding_percentage" :color="percentageColors"></el-progress>
+                <br><br>
+                <p  id="title2" style="color: aqua;">选择子场景</p>
+                <el-select v-model="child_view_selected" placeholder="选择子场景" @change="update_child_view_models_list();debug_child_view()" size="mini">
+                    <el-option
+                    v-for="item in child_view_list"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    </el-option>
+                </el-select>
+                <br><br>
+                <p id="title2" style="color: aqua;">选择模型</p>
+                <el-select v-model="model_selected" placeholder="选择想要设置的模型" @change="select_model();debug_model();" size="mini">
+                    <el-option
+                    v-for="item in child_view_model_list"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    </el-option>
+                </el-select><br>
+                <el-button  id="button1"  type="danger" v-on:click="delete_model_confirm" size="mini" :disabled="del_model_status" >删除选中模型</el-button>
+                <!-- <div style="color: aqua;" v-html="model_information"></div> -->
 
-            </div>
+                <p id="title2" style="color: aqua;">添加模型  <a style="color:rgb(111, 111, 255);font-size: 12px;font-weight: lighter;margin-left: 70px;" v-on:click="to_manage_models">模型库>></a></p>
+                <el-select v-model="model_base_selected" placeholder="选择模型库" @change="get_model_by_model_base" size="mini" :disabled="select_model_status">
+                    <el-option
+                    v-for="item in base_list"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    </el-option>
+                </el-select>
+                <br><br>    
+                <el-select v-model="model_in_model_base_selected" placeholder="选择想要添加的模型" @change="select_model_in_model_base" size="mini" :disabled="select_model_status">
+                        <el-option
+                        v-for="item in model_in_base_list"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                        </el-option>
+                </el-select>
+                <div id="select1">
+                    <el-button type="success" v-on:click="add_model" size="mini" :disabled="add_model_status">添加至场景</el-button>
+                </div>
+                <el-button style="margin-top: 20px;" type="info" v-on:click="view_display" size="mini" :disabled="!display_status">预览场景</el-button id="button1"> 
+                <el-button style="margin-top: 20px;" type="success" v-on:click="save_view" size="mini" :disabled="!save_status">存储场景</el-button id="button1">          
+            </div> 
             <div class="left-top-2">
-                <!-- <i class="el-icon-back"></i>
-                <i class="el-icon-right"></i> -->
                 <el-button-group>
                     <el-button type="danger" size="mini" icon="el-icon-arrow-left" round v-on:click="cancle_action" :disabled="cancle_action_status"></el-button>
                     <el-button type="danger" size="mini" icon="el-icon-arrow-right" round v-on:click="redo_action" :disabled="redo_action_status"></el-button>
                 </el-button-group>
                 
             </div>
-            <div class="left-top-3" v-html="save_information"></div>
-        </div>
-            
-        </div>
-        </div>
-            
-        </div>
+        </div>   
     </div>
     <script src="{% static 'main_js/model.js' %}"></script>
-    <script src="{% static 'main_js/update_models.js' %}"></script>
     <script src="{% static 'main_js/view_design.js' %}"></script> 
     <script>
         create_visit_log(2);

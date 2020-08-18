@@ -16,6 +16,7 @@ import qiniu.config
 import requests
 
 from vmaker.models import model_base,com_model,child_view,parent_view,child_view_parent_view_ralation,child_view_model_conf,model_base_model_relation
+from .. import views_common
 
 
 
@@ -116,15 +117,6 @@ def get_model_info_by_id(request):
         model_info=com_model.objects.filter(id=model_id).values()
         data={}
         data['model']=list(model_info)
-        data['model'][0]['url']=get_private_model(data['model'][0]['url'])
+        data['model'][0]['url']=views_common.get_private_model(data['model'][0]['url'])
         return JsonResponse(data)
 
-# 获取私有链接
-# @csrf_exempt
-def get_private_model(url):
-    access_key = 'VfUZy5Gm-aQkbLkpm_lcTraFLW9ac9h1wj-SHbbr'
-    secret_key = 'hBwXWe0BBbkkntfGRUtSEmsA1M9uZqrESiWyIzzk'
-    #构建鉴权对象
-    q = Auth(access_key, secret_key)
-    private_url = q.private_download_url(url, expires=360)
-    return private_url

@@ -76,7 +76,12 @@ urlpatterns = [
     path('is_view_exist/',views_view.is_view_exist,name='is_view_exist'),
     path('add_parent_view/',views_view.add_parent_view,name='add_parent_view'),
     path('add_child_view/',views_view.add_child_view,name='add_child_view'),
-   
+    path('save_view/',views_view.save_view,name='save_view'),
+    path('get_models_by_child_view/',views_view.get_models_by_child_view,name='get_models_by_child_view'),
+    ####获取场景的所有子场景
+    path('get_child_view_by_parent_view_id/',views_view.get_child_view_by_parent_view_id,name='get_child_view_by_parent_view_id'),
+    
+    path('get_model_number_by_parent_view_id/',views_view.get_model_number_by_parent_view_id,name='get_model_number_by_parent_view_id'),
     
     
 

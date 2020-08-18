@@ -76,8 +76,15 @@ WSGI_APPLICATION = 'Marvelab.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+
+        'ENGINE': 'django.db.backends.mysql',  # 或者使用 mysql.connector.django
+        'NAME': 'vmaker',
+        'USER': 'root',
+        'PASSWORD': 'dianDI2019...!',
+        'HOST':'39.100.66.11',
+        'PORT':'3306',
     }
 }
 

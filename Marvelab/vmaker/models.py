@@ -63,11 +63,13 @@ class model_base_model_relation(models.Model):
 class child_view(models.Model):
     id = models.AutoField(primary_key=True, db_column="id")
     child_view_name = models.CharField(max_length=255, db_column="child_view_name")
+    createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
+    is_delete = models.BooleanField(default=False, db_column="is_delete")
     view_position_x=models.FloatField(default=0,db_column="view_position_x")
     view_position_y=models.FloatField(default=0,db_column="view_position_y")
     view_position_z=models.FloatField(default=0,db_column="view_position_z")
-    createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
-    is_delete = models.BooleanField(default=False, db_column="is_delete")
+    
+
 
 class parent_view(models.Model):
     id = models.AutoField(primary_key=True, db_column="id")
@@ -93,17 +95,21 @@ class child_view_parent_view_ralation(models.Model):
 
 class child_view_model_conf(models.Model):
     id = models.AutoField(primary_key=True, db_column="id")
-    child_view_id = models.ForeignKey(
+    child_view = models.ForeignKey(
         'child_view',
         on_delete=models.CASCADE,
-        db_column="child_view_id"
+        db_column="child_view"
     )
-    model_id = models.ForeignKey(
+    com_model = models.ForeignKey(
         'com_model',
         on_delete=models.CASCADE,
-        db_column="model_id"
+        db_column="model"
     )
+    serial = models.CharField(default='',max_length=255, db_column="serial")
     is_delete = models.BooleanField(default=False, db_column="is_delete")
+    # view_position_x=models.FloatField(default=0,db_column="view_position_x")
+    # view_position_y=models.FloatField(default=0,db_column="view_position_y")
+    # view_position_z=models.FloatField(default=0,db_column="view_position_z")
     position_x=models.FloatField(default=0,db_column="position_x")
     position_y=models.FloatField(default=0,db_column="position_y")
     position_z=models.FloatField(default=0,db_column="position_z")

@@ -16,7 +16,7 @@ import qiniu.config
 import requests
 
 from vmaker.models import model_base,com_model,child_view,parent_view,child_view_parent_view_ralation,child_view_model_conf,model_base_model_relation
-
+from . import views_common
 
 
 #查询场景
@@ -79,6 +79,122 @@ def add_child_view(request):
             return HttpResponse('您已经创建了名为'+view_name+'的场景了，换一个吧~~')
         return HttpResponse(view_name+'场景新建失败')
         
+#将模型的配置信息存入数据库  
+@csrf_exempt
+def save_view(request):
+    #接收基础参数
+    if request.method == 'POST':
+        views_models_info=request.POST.get('views_models_info')
+        views_models_info= json.loads(views_models_info)
+        for v in views_models_info['views_info']:
+            view = views_models_info['views_info'][v]
+            view_id=view['id']
+            view_position_x=view['view_position_x']
+            view_position_y=view['view_position_y']
+            view_position_z=view['view_position_z']
+            child_view.objects.filter(id=view_id).update(view_position_x=view_position_x,view_position_y=view_position_y,view_position_z=view_position_z)
+            
+ 
+        for m in views_models_info['models_info']:
+            model = views_models_info['models_info'][m]
+            view_id=model['view_id']
+            model_id=model['model_id']
+            serial=model['serial']
+            position_x=model['position_x']
+            position_y=model['position_y']
+            position_z=model['position_z']
+            rotation_x=model['rotation_x']
+            rotation_y=model['rotation_y']
+            rotation_z=model['rotation_z']
+            materials_color_r=model['materials_color_r']
+            materials_color_g=model['materials_color_g']
+            materials_color_b=model['materials_color_b']
+            scale_x=model['scale_x']
+            scale_y=model['scale_y']
+            scale_z=model['scale_z']
+            materials_type=model['materials_type']
+            metalness=model['metalness']
+            roughness=model['roughness']
+            emissive_r=model['emissive_r']
+            emissive_g=model['emissive_g']
+            emissive_b=model['emissive_b']
+            emissiveIntensity=model['emissiveIntensity']
+            reflectivity=model['reflectivity']
+            
+            models_in=child_view_model_conf.objects.filter(child_view=child_view.objects.get(id=view_id),com_model=com_model.objects.get(id=model_id),serial=serial)
+            if len(models_in) > 0:
+                models_in.update(
+                position_x=position_x,position_y=position_y,position_z=position_z,
+                rotation_x=rotation_x,rotation_y=rotation_y,rotation_z=rotation_z,
+                materials_color_r=materials_color_r,materials_color_g=materials_color_g,materials_color_b=materials_color_b,
+                scale_x=scale_x,scale_y=scale_y,scale_z=scale_z,
+                materials_type=materials_type,metalness=metalness,roughness=roughness,
+                emissive_r=emissive_r,emissive_g=emissive_g,emissive_b=emissive_b,
+                emissiveIntensity=emissiveIntensity,reflectivity=reflectivity)
+            else:
+                child_view_model_conf.objects.create(
+                child_view=child_view.objects.get(id=view_id),com_model=com_model.objects.get(id=model_id),
+                serial=serial,position_x=position_x,position_y=position_y,position_z=position_z,
+                rotation_x=rotation_x,rotation_y=rotation_y,rotation_z=rotation_z,
+                materials_color_r=materials_color_r,materials_color_g=materials_color_g,materials_color_b=materials_color_b,
+                scale_x=scale_x,scale_y=scale_y,scale_z=scale_z,
+                materials_type=materials_type,metalness=metalness,roughness=roughness,
+                emissive_r=emissive_r,emissive_g=emissive_g,emissive_b=emissive_b,
+                emissiveIntensity=emissiveIntensity,reflectivity=reflectivity
+                )
+
+                
+        return HttpResponse('Save Success')
+
+
+#获取子场景的所有模型设置参数
+@csrf_exempt
+def get_models_by_child_view(request):
+    if request.method == 'POST':
+        child_view_id=request.POST.get('child_view_id')
+        models = child_view_model_conf.objects.filter(child_view=child_view.objects.get(id=child_view_id),is_delete=False).values()
+        data={}
+        data['models'] = list(models)
+        for i in range(len(data['models'])):
+            data['models'][i]['url']=views_common.get_private_model(com_model.objects.get(id=data['models'][i]['com_model_id']).url)
+            data['models'][i]['model_name']=com_model.objects.get(id=data['models'][i]['com_model_id']).model_name
+          
+        data['child_views']=views_common.object_to_json(child_view.objects.get(id=child_view_id))
+
+
+
+            
+        return JsonResponse(data)
+
+# 根据场景id获取其所有的子场景id
+@csrf_exempt
+def get_child_view_by_parent_view_id(request):
+    if request.method == 'POST':
+        parent_view_id=request.POST.get('parent_view_id')
+        child_views=child_view.objects.filter(child_view_parent_view_ralation__parent_view_id=parent_view.objects.get(id=parent_view_id),is_delete=False).values()
+        data=[]
+        for v in child_views:
+            data.append(v['id'])
+        return JsonResponse({
+            'parent_view_id':int(parent_view_id),
+            'child_view_id':data
+        })
+
+
+#获取母场景中模型的数量
+@csrf_exempt
+def get_model_number_by_parent_view_id(request):
+    if request.method == 'POST':
+        parent_view_id=request.POST.get('parent_view_id')
+        child_views=child_view.objects.filter(child_view_parent_view_ralation__parent_view_id=parent_view.objects.get(id=parent_view_id),is_delete=False)
+        number=0
+        for c_child_view in child_views:
+            model_confs = child_view_model_conf.objects.filter(child_view=c_child_view,is_delete=False)
+            number+=len(model_confs)
+        return HttpResponse(number)
+
+
+
 
 
 

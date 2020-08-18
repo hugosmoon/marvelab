@@ -5,7 +5,6 @@ import math
 import random
 import json
 from django.db.models import Sum, Count
-# from vmm.models import Load_models_conf,folder,com_model,views,display_views,users,visit_log,view_program
 import os
 import time
 from django.db.models import Q
@@ -28,3 +27,4 @@ def view_design(request):
 
 def model_manage(request):
     return render(request, 'model/model_manage.html')
+
