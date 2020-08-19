@@ -99,8 +99,8 @@ function initThree(debug) {
 
     let color=new THREE.Color(0x151535);
     let helper = new THREE.GridHelper(50000, 50, color, color);
-    helper.rotation.x=Math.PI*0.5;
-    helper.position.z = -2000;
+    // helper.rotation.x=Math.PI*0.5;
+    helper.position.y = -2000;
     
     helper.material.opacity=0
     // console.log(helper)
@@ -191,14 +191,14 @@ function initObject(index) {
 // 相机对象
 function Camera_info(){
     this.position={
-        x:200,
-        y:-5000,
+        x:1000,
+        y:1000,
         z:1000,
     };
     this.up={
         x:0,
-        y:0,
-        z:1
+        y:1,
+        z:0
     };
     this.lookAt={
         x:0,
