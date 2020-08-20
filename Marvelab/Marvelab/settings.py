@@ -25,7 +25,7 @@ SECRET_KEY = 'a4@u5b5ftn+wr(n9&i&@ga5hj3_rv$v^0zof9z)j1nhup7-abv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['39.100.66.11']
+ALLOWED_HOSTS = ['127.0.0.1','39.100.66.11','diandijiaoyu.com.cn','huamaofz.top']
 
 
 # Application definition
