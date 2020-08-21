@@ -98,7 +98,7 @@ function initThree(debug) {
     controller.target = new THREE.Vector3(0, 0, 0);
 
     let color=new THREE.Color(0x151535);
-    let helper = new THREE.GridHelper(50000, 50, color, color);
+    let helper = new THREE.GridHelper(50000, 200, color, color);
     // helper.rotation.x=Math.PI*0.5;
     helper.position.y = -2000;
     

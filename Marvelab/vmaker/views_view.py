@@ -10,7 +10,7 @@ import os
 import time
 from django.db.models import Q
 
-from .qiniu import qiniu_file_manage
+#from .qiniu import qiniu_file_manage
 from qiniu import Auth, put_file, etag
 import qiniu.config
 import requests

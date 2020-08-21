@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa
 
-from qiniu import Auth, put_file, etag
-import qiniu.config
-import os
-import time
-import requests
+# from qiniu import Auth, put_file, etag
+# import qiniu.config
+# import os
+# import time
+# import requests
 
-#需要填写你的 Access Key 和 Secret Key
-access_key = 'VfUZy5Gm-aQkbLkpm_lcTraFLW9ac9h1wj-SHbbr'
-secret_key = 'hBwXWe0BBbkkntfGRUtSEmsA1M9uZqrESiWyIzzk'
+# #需要填写你的 Access Key 和 Secret Key
+# access_key = 'VfUZy5Gm-aQkbLkpm_lcTraFLW9ac9h1wj-SHbbr'
+# secret_key = 'hBwXWe0BBbkkntfGRUtSEmsA1M9uZqrESiWyIzzk'
 
-#构建鉴权对象
-q = Auth(access_key, secret_key)
+# #构建鉴权对象
+# q = Auth(access_key, secret_key)
 
-#要上传的空间
-bucket_name = 'hugosmodel'
+# #要上传的空间
+# bucket_name = 'hugosmodel'
 
 # #上传后保存的文件名
 # key = str(round(time.time()*1000000)) + '.png'
@@ -39,6 +39,6 @@ bucket_name = 'hugosmodel'
 # assert ret['hash'] == etag(localfile)
 # # print(os.getcwd())
 
-base_url = 'http://hugosmodel.diandijiaoyu.com.cn/1595825433540880.STL'
-private_url = q.private_download_url(base_url, expires=360)
-print(private_url)
+# base_url = 'http://hugosmodel.diandijiaoyu.com.cn/1595825433540880.STL'
+# private_url = q.private_download_url(base_url, expires=360)
+# print(private_url)
