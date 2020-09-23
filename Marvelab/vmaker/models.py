@@ -1,5 +1,6 @@
 from django.db import models
 import django.utils.timezone as timezone
+from . import views_common
 
 
 
@@ -64,6 +65,8 @@ class child_view(models.Model):
     id = models.AutoField(primary_key=True, db_column="id")
     child_view_name = models.CharField(max_length=255, db_column="child_view_name")
     createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
+    # 当场景被更新时，version会更新
+    version =  models.CharField(default=views_common.generate_random_str,max_length=255, db_column="version")
     is_delete = models.BooleanField(default=False, db_column="is_delete")
     view_position_x=models.FloatField(default=0,db_column="view_position_x")
     view_position_y=models.FloatField(default=0,db_column="view_position_y")
@@ -75,7 +78,10 @@ class parent_view(models.Model):
     id = models.AutoField(primary_key=True, db_column="id")
     parent_view_name = models.CharField(max_length=255, db_column="parent_view_name")
     owner_id=models.IntegerField(default=1,db_column="owner_id")
+    # 当场景被更新时，version会更新
+    version =  models.CharField(default=views_common.generate_random_str,max_length=255, db_column="version")
     createtime = models.DateTimeField(default=timezone.now, db_column="createtime")
+    updatetime = models.DateTimeField(default=timezone.now, db_column="updatetime")
     is_delete = models.BooleanField(default=False, db_column="is_delete")
 
 class child_view_parent_view_ralation(models.Model):

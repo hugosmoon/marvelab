@@ -14,6 +14,7 @@ from django.db.models import Q
 from qiniu import Auth, put_file, etag
 import qiniu.config
 import requests
+import django.utils.timezone as timezone
 
 from vmaker.models import model_base,com_model,child_view,parent_view,child_view_parent_view_ralation,child_view_model_conf,model_base_model_relation,camera
 from . import views_common
@@ -97,17 +98,22 @@ def add_child_view(request):
 def save_view(request):
     #接收基础参数
     if request.method == 'POST':
+        parent_view_id=int(request.POST.get('parent_view_id'))
         views_models_info=request.POST.get('views_models_info')
         views_models_info= json.loads(views_models_info)
+        c_id=0
         for v in views_models_info['views_info']:
             view = views_models_info['views_info'][v]
             view_id=view['id']
             view_position_x=view['view_position_x']
             view_position_y=view['view_position_y']
             view_position_z=view['view_position_z']
-            child_view.objects.filter(id=view_id,is_delete=False).update(view_position_x=view_position_x,view_position_y=view_position_y,view_position_z=view_position_z)
+            cv_list=child_view.objects.filter(id=view_id,is_delete=False)
+            if len(cv_list)>0 and (cv_list[0].view_position_x != view_position_x or cv_list[0].view_position_y != view_position_y or cv_list[0].view_position_z != view_position_z):
+                cv_list.update(view_position_x=view_position_x,view_position_y=view_position_y,view_position_z=view_position_z)
+                version=views_common.generate_random_str(30)
+                child_view.objects.filter(id=view_id).update(version=version)
             
- 
         for m in views_models_info['models_info']:
             model = views_models_info['models_info'][m]
             view_id=model['view_id']
@@ -134,9 +140,12 @@ def save_view(request):
             emissiveIntensity=model['emissiveIntensity']
             reflectivity=model['reflectivity']
             
-            models_in=child_view_model_conf.objects.filter(child_view=child_view.objects.get(id=view_id,is_delete=False),com_model=com_model.objects.get(id=model_id,is_delete=False),serial=serial,is_delete=False)
-            if len(models_in) > 0:
-                models_in.update(
+            models_in_list=child_view_model_conf.objects.filter(child_view=child_view.objects.get(id=view_id,is_delete=False),com_model=com_model.objects.get(id=model_id,is_delete=False),serial=serial,is_delete=False)
+            # print(models_in_list[0])
+            models_in=models_in_list[0]
+            if len(models_in_list) > 0 and (models_in.position_x !=position_x or models_in.position_y !=position_y or models_in.position_z !=position_z or models_in.rotation_x !=rotation_x or models_in.rotation_y !=rotation_y or models_in.rotation_z !=rotation_z or models_in.materials_color_r !=materials_color_r or models_in.materials_color_g !=materials_color_g or models_in.materials_color_b !=materials_color_b or models_in.scale_x !=scale_x or models_in.scale_y !=scale_y or models_in.scale_z !=scale_z or models_in.metalness !=metalness or models_in.roughness !=roughness or models_in.emissive_r !=emissive_r or models_in.emissive_g !=emissive_g or models_in.emissive_b !=emissive_b or models_in.emissiveIntensity !=emissiveIntensity or models_in.reflectivity !=reflectivity):
+                print(serial)
+                models_in_list.update(
                 position_x=position_x,position_y=position_y,position_z=position_z,
                 rotation_x=rotation_x,rotation_y=rotation_y,rotation_z=rotation_z,
                 materials_color_r=materials_color_r,materials_color_g=materials_color_g,materials_color_b=materials_color_b,
@@ -144,6 +153,10 @@ def save_view(request):
                 materials_type=materials_type,metalness=metalness,roughness=roughness,
                 emissive_r=emissive_r,emissive_g=emissive_g,emissive_b=emissive_b,
                 emissiveIntensity=emissiveIntensity,reflectivity=reflectivity)
+                if c_id !=view_id:
+                    c_id =view_id
+                    version=views_common.generate_random_str(30)
+                    child_view.objects.filter(id=c_id).update(version=version)
             else:
                 child_view_model_conf.objects.create(
                 child_view=child_view.objects.get(id=view_id,is_delete=False),com_model=com_model.objects.get(id=model_id,is_delete=False),
@@ -155,8 +168,8 @@ def save_view(request):
                 emissive_r=emissive_r,emissive_g=emissive_g,emissive_b=emissive_b,
                 emissiveIntensity=emissiveIntensity,reflectivity=reflectivity
                 )
-
-                
+        version=views_common.generate_random_str(30)
+        parent_view.objects.filter(id=parent_view_id).update(version=version,updatetime=timezone.now())
         return HttpResponse('Save Success')
 
 
@@ -299,6 +312,23 @@ def get_camera_by_id(request):
         data['lookAt']['y']=c.lookAt_y
         data['lookAt']['z']=c.lookAt_z
         return JsonResponse(data)
+
+######################################################################################
+# 场景预览
+def view_display(request,view_id):
+    return render(request, 'virtual_view/view_display.html',{"view_id": view_id})
+# 获取母场景和各个子场景的版本号
+@csrf_exempt
+def get_versions_by_parent_view_id(request):
+    if request.method == 'POST':
+        parent_view_id=request.POST.get('parent_view_id')
+        data={}
+        data['parent_view_version']=parent_view.objects.get(pk=parent_view_id,is_delete=False).version
+        data['child_view_version']={}
+        cvs=child_view.objects.filter(child_view_parent_view_ralation__parent_view_id=parent_view_id,is_delete=False)
+        for cv in cvs:
+            data['child_view_version']['v_'+str(cv.id)]=cv.version
+        return JsonResponse(data)    
 
 
 

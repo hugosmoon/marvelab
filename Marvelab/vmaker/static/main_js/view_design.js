@@ -463,7 +463,8 @@ let Main = {
             this.$http.post(
                 '/vmaker/save_view/',
                 {
-                    views_models_info: JSON.stringify(views_models_info)
+                    views_models_info: JSON.stringify(views_models_info),
+                    parent_view_id:this.parent_view_selected
                 },
                 { emulateJSON: true }
             ).then(function (res) {
@@ -1121,6 +1122,7 @@ let Main = {
             views_models_info['models_info'][serial_1].change_po_y(views_models_info['models_info'][serial_2].position_y);
             views_models_info['models_info'][serial_1].change_po_z(views_models_info['models_info'][serial_2].position_z);
             this.transformControls_foucs_model_selected();
+            history_push();
         },
         // 模型选中变色
         model_change_color: function (x, i) {

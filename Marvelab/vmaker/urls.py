@@ -28,7 +28,7 @@ urlpatterns = [
     
     # path('get_model_info_by_id/',views.get_model_info_by_id,name='get_model_info_by_id'),
     
-    # re_path('^view_display/(?P<view_id>[0-9]+)/',views.view_display,name='view_display'),
+    
     # path('create_display_view/',views.create_display_view,name='create_display_view'),
     # path('get_display_view/',views.get_display_view,name='get_display_view'),
     # path('test/',views.test,name='test'),
@@ -88,6 +88,12 @@ urlpatterns = [
     path('create_camera/',views_view.create_camera,name='create_camera'),
     path('get_cameras_by_parent_view_id/',views_view.get_cameras_by_parent_view_id,name='get_cameras_by_parent_view_id'),
     path('get_camera_by_id/',views_view.get_camera_by_id,name='get_camera_by_id'),
+
+
+    # 场景预览
+    re_path('^view_display/(?P<view_id>[0-9]+)/',views_view.view_display,name='view_display'),
+    re_path('^get_versions_by_parent_view_id/',views_view.get_versions_by_parent_view_id,name='get_versions_by_parent_view_id'),
+    
     
 
 ]

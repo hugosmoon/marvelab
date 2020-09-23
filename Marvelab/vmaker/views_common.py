@@ -13,6 +13,16 @@ from django.db.models import Q
 from qiniu import Auth, put_file, etag
 import qiniu.config
 import requests
+import string
+
+def generate_random_str(randomlength=30):    
+    '''    
+    string.digits = 0123456789    
+    string.ascii_letters = 26个小写,26个大写    
+    '''    
+    str_list = random.sample(string.digits + string.ascii_letters,randomlength)    				
+    random_str = ''.join(str_list)    
+    return random_str
 # 获取私有链接
 # @csrf_exempt
 def get_private_model(url):

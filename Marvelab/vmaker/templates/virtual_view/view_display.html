@@ -53,66 +53,201 @@
 
     <script>
         let display_view_id={{view_id}};
-        let renderer, camera, scene,controls,controller;
+        let hugo;
+        // let renderer, camera, scene,controls,controller;
         ////模型信息列表
-        let models_info=[];
-        ////模型实体列表
-        let models=[];
-        let load_models_num;
-        let loaded_models_num=0;
-        let load_status=false;
+        // let models_info=[];
+        // ////模型实体列表
+        // let models=[];
+        // let load_models_num;
+        // let loaded_models_num=0;
+        // let load_status=false;
         let Main = {
             data() {
                 return {
                     display_name:'',
-
+                    parent_view_selected:display_view_id,
+                    // views_models_info的哈希值，校验是否需要保存
+                    views_models_info_hashcode: 0,
+                    versions:null,
+                    // 视角相关
+                    camera_selected: '',
+                    camera_list: [],
+                    camera_info_list: {},
                 }
             },
             mounted:function(){
-                this.get_display_info();
+                hugo=this;
+                // this.get_display_info();
                 initThree(0);
                 loadAutoScreen(camera, renderer);
-                this.openFullScreen(200);
-                load_models(display_view_id)
+                this.load_parent_view();
+                // this.openFullScreen(200);
+                // load_models(display_view_id)
                 render();
                 this.timer = setInterval(this.update, 2000);
             },
             methods: {
                 update:function(){
                     // console.log(123)
-                    update_models();
-                    update_models_info();
+                    this.update_view();
+                    // update_models_info();
+                    // update_models();
                 },
-                get_display_info:function(){
+                // 根据parent_view_id取回所有的视角
+                get_camera_by_parent_view_id: function () {
                     this.$http.post(
-                    '/vmaker/get_display_view/',
+                        '/vmaker/get_cameras_by_parent_view_id/',
+                        {
+                            parent_view_id: this.parent_view_selected
+                        },
+                        { emulateJSON: true }
+                    ).then(function (res) {
+                        this.camera_info_list = {};
+                        this.camera_list = [];
+                        let cs = res.body.cameras;
+                        cs.forEach(c => {
+                            this.camera_info_list['c' + c['id']] = c;
+                            this.camera_list.push({ value: c.id, label: c.camera_name });
+                        })
+                    })
+                },
+                update_view:function(){
+                    // 获取当前场景及各个子场景的版本号
+                    this.$http.post(
+                    '/vmaker/get_versions_by_parent_view_id/',
                     {
-                        display_view_id:display_view_id
+                        parent_view_id:this.parent_view_selected
                     },
                     { emulateJSON: true }
                     ).then(function (res) {
-                        this.display_name=res.body.views[0].display_name;
-                        console.log(this.display_name)
-                        $('#title2').html(this.display_name)
-                        $("title").html(this.display_name);
-                    });
-                },
-                // 加载遮罩
-                openFullScreen:function(time) {
-                    const loading = this.$loading({
-                        lock: true,
-                        text: '模型加载中',
-                        background: 'rgba(0, 0, 0, 0.92)'
-                    });
-                    setTimeout(() => {
-                        if(load_status){
-                            loading.close();
+                        if(this.versions==null){
+                            this.versions=res.body;
+                            this.get_camera_by_parent_view_id();
                         }
-                        else {
-                            this.openFullScreen(200);
+                        // 当母场景的版本号发生变化时，更新相机列表，版本号发生变化的子场景模型信息更新，新出现的模型加载
+                        if(this.versions.parent_view_version!=res.body.parent_view_version){
+                            this.get_camera_by_parent_view_id();
+                            // console.log("更新")
+                            // Object.keys(this.versions.child_view_version).forEach(k => {
+                            //         console.log(k)
+                            //     }
+                            console.log(res.body)
+                            // )
                         }
+                    });
+                    
 
-                    }, time);
+                },
+                // get_display_info:function(){
+                //     this.$http.post(
+                //     '/vmaker/get_display_view/',
+                //     {
+                //         display_view_id:display_view_id
+                //     },
+                //     { emulateJSON: true }
+                //     ).then(function (res) {
+                //         this.display_name=res.body.views[0].display_name;
+                //         console.log(this.display_name)
+                //         $('#title2').html(this.display_name)
+                //         $("title").html(this.display_name);
+                //     });
+                // },
+                // // 加载遮罩
+                // openFullScreen:function(time) {
+                //     const loading = this.$loading({
+                //         lock: true,
+                //         text: '模型加载中',
+                //         background: 'rgba(0, 0, 0, 0.92)'
+                //     });
+                //     setTimeout(() => {
+                //         if(load_status){
+                //             loading.close();
+                //         }
+                //         else {
+                //             this.openFullScreen(200);
+                //         }
+
+                //     }, time);
+                // },
+                // 加载选中的母场景的所有模型
+                load_parent_view: function () {
+                    if (this.parent_view_selected == '') {
+                        alert("没有选中任何场景")
+                        return false;
+                    }
+
+                    // 获取母场景模型的总数,赋值给will_load_models_number
+                    this.$http.post(
+                        '/vmaker/get_model_number_by_parent_view_id/',
+                        {
+                            parent_view_id: this.parent_view_selected
+                        },
+                        { emulateJSON: true }
+                    ).then(function (res) {
+                        // 本次加载计数清零
+                        // models_view_control_arguments.models_number_reset();
+                        // this.will_load_models_number = res.body;
+                        if (this.will_load_models_number != 0) {
+                            this.loding_status = true;
+                        }
+                    });
+
+                    this.$http.post(
+                        '/vmaker/get_child_view_by_parent_view_id/',
+                        {
+                            parent_view_id: this.parent_view_selected
+                        },
+                        { emulateJSON: true }
+                    ).then(function (res) {
+                        res.body.child_view_id.forEach(child_view_id => {
+                            this.load_child_view_model(child_view_id)
+                        })
+                    })
+                },
+
+                // 根据场景的ID加载所有子场景场景中的模型
+                load_child_view_model: function (child_view_id) {
+                    let models_got_list = [];
+                    this.$http.post(
+                        '/vmaker/get_models_by_child_view/',
+                        {
+                            child_view_id: child_view_id
+                        },
+                        { emulateJSON: true }
+                    ).then(function (res) {
+                        // console.log(res.body);
+                        res.body.models.forEach(model => {
+                            let m_serial = model.serial;
+                            views_models_info['models_info'][m_serial] = new Model(model.child_view_id, model.com_model_id, model.model_name, model.url, m_serial, model.materials_type);
+                            views_models_info['models_info'][m_serial].change_po_x(model.position_x);
+                            views_models_info['models_info'][m_serial].change_po_y(model.position_y)
+                            views_models_info['models_info'][m_serial].change_po_z(model.position_z)
+                            views_models_info['models_info'][m_serial].change_ro_x(model.rotation_x)
+                            views_models_info['models_info'][m_serial].change_ro_y(model.rotation_y)
+                            views_models_info['models_info'][m_serial].change_ro_z(model.rotation_z)
+                            views_models_info['models_info'][m_serial].change_materials_color_r(model.materials_color_r)
+                            views_models_info['models_info'][m_serial].change_materials_color_g(model.materials_color_g)
+                            views_models_info['models_info'][m_serial].change_materials_color_b(model.materials_color_b)
+                            views_models_info['models_info'][m_serial].change_metalness(model.metalness)
+                            views_models_info['models_info'][m_serial].change_roughness(model.roughness)
+                            views_models_info['models_info'][m_serial].change_emissive_r(model.emissive_r)
+                            views_models_info['models_info'][m_serial].change_emissive_g(model.emissive_g)
+                            views_models_info['models_info'][m_serial].change_emissive_b(model.emissive_b)
+                            views_models_info['models_info'][m_serial].change_emissiveIntensity(model.emissiveIntensity)
+                            views_models_info['models_info'][m_serial].change_reflectivity(model.reflectivity)
+                            views_models_info['models_info'][m_serial].change_scale_x(model.scale_x)
+                            views_models_info['models_info'][m_serial].change_scale_y(model.scale_y)
+                            views_models_info['models_info'][m_serial].change_scale_z(model.scale_z)
+                            initObject(m_serial);
+                        });
+                        views_models_info['views_info']['v' + child_view_id] = new ChildView(child_view_id)
+                        views_models_info['views_info']['v' + child_view_id].change_view_name(res.body.child_views.child_view_name)
+                        views_models_info['views_info']['v' + child_view_id].change_view_position_x(res.body.child_views.view_position_x)
+                        views_models_info['views_info']['v' + child_view_id].change_view_position_y(res.body.child_views.view_position_y)
+                        views_models_info['views_info']['v' + child_view_id].change_view_position_z(res.body.child_views.view_position_z)
+                    });
+
                 },
 
             }
