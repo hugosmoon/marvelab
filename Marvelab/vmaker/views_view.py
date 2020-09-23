@@ -267,7 +267,7 @@ def get_cameras_by_parent_view_id(request):
         data={}
         data['cameras']=[]
         cameras_list=list(cameras)
-        print(len(cameras_list))
+        # print(len(cameras_list))
         for i in range(len(cameras_list)):
              data['cameras'].append({
                 'id':cameras_list[i].id,
