@@ -31,7 +31,7 @@ let Main = {
             model_in_base_list: [],
             add_model_status: true,
             // 是否可以预览场景
-            display_status: false,
+            display_status: true,
             // views_models_info的哈希值，校验是否需要保存
             views_models_info_hashcode: 0,
 
@@ -442,7 +442,7 @@ let Main = {
             }
         },
         view_display: function () {
-
+            window.open('/vmaker/view_display/'+this.parent_view_selected);
         },
         save_view: function (save_type) {
             if (Object.keys(views_models_info['models_info']).length == 0) {
@@ -477,8 +477,6 @@ let Main = {
             });
         },
         initDragControls: function () {
-            // console.log((Object.keys(models).length))
-            // console.log(this.child_view_selected)
             let main = this;
             // 将当前选中的child_view模型初始化到模型列表中
             let models_to_control = [];

@@ -101,6 +101,7 @@ def save_view(request):
         parent_view_id=int(request.POST.get('parent_view_id'))
         views_models_info=request.POST.get('views_models_info')
         views_models_info= json.loads(views_models_info)
+        # print(views_models_info)
         c_id=0
         for v in views_models_info['views_info']:
             view = views_models_info['views_info'][v]
@@ -141,22 +142,38 @@ def save_view(request):
             reflectivity=model['reflectivity']
             
             models_in_list=child_view_model_conf.objects.filter(child_view=child_view.objects.get(id=view_id,is_delete=False),com_model=com_model.objects.get(id=model_id,is_delete=False),serial=serial,is_delete=False)
-            # print(models_in_list[0])
-            models_in=models_in_list[0]
-            if len(models_in_list) > 0 and (models_in.position_x !=position_x or models_in.position_y !=position_y or models_in.position_z !=position_z or models_in.rotation_x !=rotation_x or models_in.rotation_y !=rotation_y or models_in.rotation_z !=rotation_z or models_in.materials_color_r !=materials_color_r or models_in.materials_color_g !=materials_color_g or models_in.materials_color_b !=materials_color_b or models_in.scale_x !=scale_x or models_in.scale_y !=scale_y or models_in.scale_z !=scale_z or models_in.metalness !=metalness or models_in.roughness !=roughness or models_in.emissive_r !=emissive_r or models_in.emissive_g !=emissive_g or models_in.emissive_b !=emissive_b or models_in.emissiveIntensity !=emissiveIntensity or models_in.reflectivity !=reflectivity):
-                print(serial)
-                models_in_list.update(
-                position_x=position_x,position_y=position_y,position_z=position_z,
-                rotation_x=rotation_x,rotation_y=rotation_y,rotation_z=rotation_z,
-                materials_color_r=materials_color_r,materials_color_g=materials_color_g,materials_color_b=materials_color_b,
-                scale_x=scale_x,scale_y=scale_y,scale_z=scale_z,
-                materials_type=materials_type,metalness=metalness,roughness=roughness,
-                emissive_r=emissive_r,emissive_g=emissive_g,emissive_b=emissive_b,
-                emissiveIntensity=emissiveIntensity,reflectivity=reflectivity)
-                if c_id !=view_id:
-                    c_id =view_id
-                    version=views_common.generate_random_str(30)
-                    child_view.objects.filter(id=c_id).update(version=version)
+            if len(models_in_list) > 0:
+                if ((models_in_list[0].position_x - position_x)**2 > 0.0001 
+                or (models_in_list[0].position_y - position_y)**2 > 0.0001 
+                or (models_in_list[0].position_z - position_z)**2 > 0.0001
+                or (models_in_list[0].rotation_x - rotation_x)**2 > 0.0001 
+                or (models_in_list[0].rotation_y - rotation_y)**2 > 0.0001 
+                or (models_in_list[0].rotation_z - rotation_z)**2 > 0.0001 
+                or models_in_list[0].materials_color_r !=materials_color_r 
+                or models_in_list[0].materials_color_g !=materials_color_g 
+                or models_in_list[0].materials_color_b !=materials_color_b 
+                or (models_in_list[0].scale_x - scale_x)**2 > 0.0001 
+                or (models_in_list[0].scale_y - scale_y)**2 > 0.0001 
+                or (models_in_list[0].scale_z - scale_z)**2 > 0.0001 
+                or models_in_list[0].metalness !=metalness 
+                or models_in_list[0].roughness !=roughness 
+                or models_in_list[0].emissive_r !=emissive_r 
+                or models_in_list[0].emissive_g !=emissive_g 
+                or models_in_list[0].emissive_b !=emissive_b 
+                or models_in_list[0].emissiveIntensity !=emissiveIntensity 
+                or models_in_list[0].reflectivity !=reflectivity ):
+                    models_in_list.update(
+                    position_x=position_x,position_y=position_y,position_z=position_z,
+                    rotation_x=rotation_x,rotation_y=rotation_y,rotation_z=rotation_z,
+                    materials_color_r=materials_color_r,materials_color_g=materials_color_g,materials_color_b=materials_color_b,
+                    scale_x=scale_x,scale_y=scale_y,scale_z=scale_z,
+                    materials_type=materials_type,metalness=metalness,roughness=roughness,
+                    emissive_r=emissive_r,emissive_g=emissive_g,emissive_b=emissive_b,
+                    emissiveIntensity=emissiveIntensity,reflectivity=reflectivity)
+                    if c_id !=view_id:
+                        c_id =view_id
+                        version=views_common.generate_random_str(30)
+                        child_view.objects.filter(id=c_id).update(version=version)
             else:
                 child_view_model_conf.objects.create(
                 child_view=child_view.objects.get(id=view_id,is_delete=False),com_model=com_model.objects.get(id=model_id,is_delete=False),
@@ -316,7 +333,8 @@ def get_camera_by_id(request):
 ######################################################################################
 # 场景预览
 def view_display(request,view_id):
-    return render(request, 'virtual_view/view_display.html',{"view_id": view_id})
+    view_name=parent_view.objects.get(id=view_id).parent_view_name
+    return render(request, 'virtual_view/view_display.html',{"view_id": view_id,"view_name":view_name})
 # 获取母场景和各个子场景的版本号
 @csrf_exempt
 def get_versions_by_parent_view_id(request):
@@ -327,7 +345,7 @@ def get_versions_by_parent_view_id(request):
         data['child_view_version']={}
         cvs=child_view.objects.filter(child_view_parent_view_ralation__parent_view_id=parent_view_id,is_delete=False)
         for cv in cvs:
-            data['child_view_version']['v_'+str(cv.id)]=cv.version
+            data['child_view_version']['v'+str(cv.id)]=cv.version
         return JsonResponse(data)    
 
 

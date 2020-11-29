@@ -41,7 +41,20 @@
         </div>
         <div id="app">
             <div id="lef_top_label">
-                <p id="title2"></p>
+                <!-- <p id="title2">{{view_name}}</p> -->
+                <p style="color: aqua;">
+                    <b>场景名称: </b>
+                    {{view_name}}
+                     </p>
+                <!-- <el-select id="parent_view_select" v-model="parent_view_selected" placeholder="请选择场景" :disabled="parent_view_name_select_disable_status" @change="parent_view_change" size="mini"> -->
+                <el-select v-model="camera_selected" size="mini">
+                    <el-option
+                    v-for="item in camera_list"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    </el-option>
+                </el-select>
             </div>
         </div>
             
@@ -85,11 +98,11 @@
                 // this.openFullScreen(200);
                 // load_models(display_view_id)
                 render();
-                this.timer = setInterval(this.update, 2000);
+                this.update_all();
+                this.timer = setInterval(this.update_all, 2000);
             },
             methods: {
-                update:function(){
-                    // console.log(123)
+                update_all:function(){
                     this.update_view();
                     // update_models_info();
                     // update_models();
@@ -127,49 +140,25 @@
                         }
                         // 当母场景的版本号发生变化时，更新相机列表，版本号发生变化的子场景模型信息更新，新出现的模型加载
                         if(this.versions.parent_view_version!=res.body.parent_view_version){
+                            // 检查哪些字场景版本号发生了变化
+                            // console.log(res.body)
+                            Object.keys(this.versions.child_view_version).forEach(k => {
+                                if(this.versions.child_view_version[k] != res.body.child_view_version[k]){
+                                    console.log(k)
+                                    this.versions.child_view_version[k] = res.body.child_view_version[k]
+                                }
+                            })
+
                             this.get_camera_by_parent_view_id();
                             // console.log("更新")
                             // Object.keys(this.versions.child_view_version).forEach(k => {
                             //         console.log(k)
                             //     }
-                            console.log(res.body)
+                            // console.log(res.body)
                             // )
                         }
                     });
-                    
-
                 },
-                // get_display_info:function(){
-                //     this.$http.post(
-                //     '/vmaker/get_display_view/',
-                //     {
-                //         display_view_id:display_view_id
-                //     },
-                //     { emulateJSON: true }
-                //     ).then(function (res) {
-                //         this.display_name=res.body.views[0].display_name;
-                //         console.log(this.display_name)
-                //         $('#title2').html(this.display_name)
-                //         $("title").html(this.display_name);
-                //     });
-                // },
-                // // 加载遮罩
-                // openFullScreen:function(time) {
-                //     const loading = this.$loading({
-                //         lock: true,
-                //         text: '模型加载中',
-                //         background: 'rgba(0, 0, 0, 0.92)'
-                //     });
-                //     setTimeout(() => {
-                //         if(load_status){
-                //             loading.close();
-                //         }
-                //         else {
-                //             this.openFullScreen(200);
-                //         }
-
-                //     }, time);
-                // },
                 // 加载选中的母场景的所有模型
                 load_parent_view: function () {
                     if (this.parent_view_selected == '') {
@@ -188,6 +177,7 @@
                         // 本次加载计数清零
                         // models_view_control_arguments.models_number_reset();
                         // this.will_load_models_number = res.body;
+                        // console.log(res.body);
                         if (this.will_load_models_number != 0) {
                             this.loding_status = true;
                         }
